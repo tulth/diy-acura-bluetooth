@@ -20,6 +20,7 @@ Building
 Build platform:
 Arch linux 
 with community package: arm-none-eabi-gcc 5.3.0-1
+with community package: arm-none-eabi-newlib
 with package: python
 
 Desktop shared library
