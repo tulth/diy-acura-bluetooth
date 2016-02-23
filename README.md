@@ -22,6 +22,17 @@ Arch linux
 with community package: arm-none-eabi-gcc 5.3.0-1
 with package: python
 
+Desktop shared library
+------------
+    cd target_desktop
+    ./make.sh
+
+Teensy3 embedded executables
+------------
+    cd target_teensy3
+    ./make.sh
+
+
 Loading
 ====================
 To load you will need this arch linux AUR: teensy-loader-cli
