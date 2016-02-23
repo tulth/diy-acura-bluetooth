@@ -32,31 +32,26 @@ add_definitions(-DUSB_SERIAL -DLAYOUT_US_ENGLISH -DTEENSYDUINO=124 -DF_CPU=48000
 
 include_directories("./submodule_teensy_cores/teensy3" "../common/mbus" "./arm_lib/include" )
 
-
 ##############################
 file(GLOB TEENSY3_SRC "submodule_teensy_cores/teensy3/*.c" "submodule_teensy_cores/teensy3/*.cpp")
 list(REMOVE_ITEM TEENSY3_SRC "${CMAKE_CURRENT_SOURCE_DIR}/submodule_teensy_cores/teensy3/main.cpp")
-add_library(teensy3_lib STATIC ${TEENSY3_SRC})
-
+add_library(teensy3 STATIC ${TEENSY3_SRC})
 
 ##############################
-
 file(GLOB MBUS_SRC "../common/mbus/*.cpp" "../common/mbus/*.c" )
-add_executable(mbus_main.elf src/mbus_main.cpp ${MBUS_SRC} )
-target_link_libraries(mbus_main.elf teensy3_lib)
-add_executable(vcd_main.elf src/vcd_main.cpp ${MBUS_SRC})
-target_link_libraries(vcd_main.elf teensy3_lib)
+add_library(mbus STATIC ${MBUS_SRC})
+set_target_properties(mbus PROPERTIES COMPILE_FLAGS "-Wpedantic -Wextra -Werror")
 
-add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/mbus_main.hex
-                   COMMAND arm-none-eabi-objcopy -O ihex -R .eeprom mbus_main.elf mbus_main.hex
-                   DEPENDS mbus_main.elf
-                   COMMENT "objcopying mbus_main to mbus_main.hex")
-add_custom_target(mbus_main.hex ALL DEPENDS ${CMAKE_BINARY_DIR}/mbus_main.hex)
-set_target_properties(mbus_main.elf PROPERTIES COMPILE_FLAGS "-Wpedantic -Wextra -Werror")
-
-add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/vcd_main.hex
-                   COMMAND arm-none-eabi-objcopy -O ihex -R .eeprom vcd_main.elf vcd_main.hex
-                   DEPENDS vcd_main.elf
-                   COMMENT "objcopying vcd_main to vcd_main.hex")
-add_custom_target(vcd_main.hex ALL DEPENDS ${CMAKE_BINARY_DIR}/vcd_main.hex)
-set_target_properties(mbus_main.elf PROPERTIES COMPILE_FLAGS "-Wpedantic -Wextra -Werror")
+##############################
+foreach( top_src mbus_main.cpp vcd_main.cpp )
+    string( REPLACE ".cpp" ".elf" top_elf ${top_src} )
+    add_executable( ${top_elf} src/${top_src} )
+    target_link_libraries( ${top_elf} mbus teensy3 )
+    set_target_properties( ${top_elf} PROPERTIES COMPILE_FLAGS "-Wpedantic -Wextra -Werror")
+    string( REPLACE ".cpp" ".hex" top_hex ${top_src} )
+    add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/${top_hex}
+                       COMMAND arm-none-eabi-objcopy -O ihex -R .eeprom ${top_elf} ${top_hex}
+                       DEPENDS ${top_elf}
+                       COMMENT "objcopying ${top_elf} to ${top_hex}")
+    add_custom_target( build_${top_hex} ALL DEPENDS ${CMAKE_BINARY_DIR}/${top_hex})
+endforeach( top_src ${APP_SOURCES} )
