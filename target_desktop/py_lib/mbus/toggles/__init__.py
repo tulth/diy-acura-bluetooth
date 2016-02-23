@@ -3,24 +3,21 @@ from __future__ import print_function
 import sys
 import os
 import time
+from .. import mbusTime
 
 class ToggleElement(object):
 
-    def __init__(self, timeStampType="microsHex"):
-        assert timeStampType == "microsHex"
-        self.time = None
+    def __init__(self, mbusTimeFormat="microsHex"):
+        self.time = mbusTime.MbusTime(val=0, mbusTimeFormat=mbusTimeFormat)
         self.val = None
 
     def fromStr(self, argStr):
-        # FIXME if we are supporting other time stamps this could be a good place to do it
         timeStr, valStr = argStr.split(" ")
-        self.time = int(timeStr, 16)
-        self.val = bool(int(valStr))
+        remainder = self.time.fromStr(argStr)
+        self.val = bool(int(remainder))
 
     def fromTuple(self, timeInUs, val):
-        # FIXME if we are supporting other time stamps this could be a good place to do it
-        timeStr, valStr = argStr.split(" ")
-        self.time = int(timeStr, 16)
+        self.time.fromInt(timeInUs)
         self.val = bool(int(valStr))
 
     def __str__(self):
@@ -33,23 +30,28 @@ class ToggleElement(object):
         return "".join(resultList)
 
 
-def fromStr_ToggleElement(argStr, timeStampType="microsHex"):
-    togElem = ToggleElement(timeStampType)
+def fromStr_ToggleElement(argStr, mbusTimeFormat="microsHex"):
+    togElem = ToggleElement(mbusTimeFormat)
     togElem.fromStr(argStr)
     return togElem
 
 
-def fromTimeVal_ToggleElement(timeInUs, val, timeStampType="microsHex"):
-    togElem = ToggleElement(timeStampType)
+def fromTimeVal_ToggleElement(timeInUs, val, mbusTimeFormat="microsHex"):
+    togElem = ToggleElement(mbusTimeFormat)
     togElem.fromTimeVal(timeInUs)
     return togElem
 
 
 class ToggleList(list):
 
-    def __init__(self, timeStampType="microsHex"):
-        assert timeStampType == "microsHex"
+    def __init__(self, mbusTimeFormat="microsHex"):
         super().__init__()
+        self.mbusTimeFormat = mbusTimeFormat
+
+    def updateMbusTimeFormat(self, mbusTimeFormat):
+        self.mbusTimeFormat = mbusTimeFormat
+        for toggle in self:
+            toggle.time.setMbusTimeFormat(mbusTimeFormat)
 
     def fromFileName(self, fileName):
         with open(fileName, 'r') as fileHandle:
@@ -69,14 +71,14 @@ class ToggleList(list):
                 charList.append(fileHandle.read(1))
             line = "".join(charList)
         return line, fileReadDone
-    
+
     def fromFileHandle(self, fileHandle):
         fileReadDone = False
         while not(fileReadDone):
             line, fileReadDone = self.readLineFromFileHandle(fileHandle)
             if line is not None:
                 line = line.rstrip()
-                self.append(fromStr_ToggleElement(line))
+                self.append(fromStr_ToggleElement(line, self.mbusTimeFormat))
 
     def toFileName(self, fileName):
         with open(fileName, 'w') as fileHandle:
@@ -92,6 +94,7 @@ class ToggleList(list):
             self.toVcdFileHandle(fileHandle)
 
     def toVcdFileHandle(self, fileHandle, waveId="$"):
+        self.updateMbusTimeFormat("microsInt")
         fileHandle.write("$date\n")
         fileHandle.write("   {}\n".format(time.strftime("%Y-%m-%d %H:%M")))
         fileHandle.write("$end\n")
@@ -117,7 +120,7 @@ class ToggleList(list):
         for togElem in self:
             resultList.append(str(togElem))
         return "\n".join(resultList)
-    
+
 if __name__ == '__main__':
     print("library only!")
     sys.exit(1)

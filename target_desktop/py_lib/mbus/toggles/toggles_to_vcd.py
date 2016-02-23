@@ -7,6 +7,8 @@ import os
 import logging
 import argparse
 from . import *
+from .. import mbusTime
+
 
 def main(argv):
     cfg = parseArgs(argv)

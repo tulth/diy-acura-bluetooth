@@ -38,7 +38,7 @@ class MbusRawNibbleListStruct(ctypes.Structure):
             return "{} {}".format("{:x}".format(self.time), valStr)
         else:
             return "{}".format(valStr)
-            
+
     def fromStr(self, argStr):
         if self.timeStampType is None:
             valStr = argStr
@@ -87,7 +87,7 @@ class MbusRawNibbleListStruct(ctypes.Structure):
                     currentTimeUs += (3000 - 1800)
         currentTimeUs += (3000 - 600)
         return toggleList
-        
+
 
 def fromStr_MbusRawNibbleListStruct(argStr, timeStampType="pyTimeElapsed"):
     obj = ToggleElement(timeStampType)
@@ -120,7 +120,7 @@ class MbusRawNibbleListStructList(list):
                 charList.append(fileHandle.read(1))
             line = "".join(charList)
         return line, fileReadDone
-    
+
     def fromFileHandle(self, fileHandle):
         fileReadDone = False
         while not(fileReadDone):
@@ -128,7 +128,6 @@ class MbusRawNibbleListStructList(list):
             if line is not None:
                 line = line.rstrip()
                 self.append(fromStr_MbusRawNibbleListStruct(line, timeStampType=self.timeStampType))
-
 
     def toFileName(self, fileName):
         with open(fileName, 'w') as fileHandle:
