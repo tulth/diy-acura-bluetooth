@@ -1,0 +1,20 @@
+[*]
+[*] GTKWave Analyzer v3.3.64 (w)1999-2014 BSI
+[*] Sat Feb 20 20:11:57 2016
+[*]
+[dumpfile] "/home/tulth/projects/acura_bluetooth/firmware/vcd/deleteme"
+[dumpfile_mtime] "Fri Feb 19 02:55:41 2016"
+[dumpfile_size] 74071
+[savefile] "/home/tulth/projects/acura_bluetooth/firmware/vcd/vcdcap.gtkw"
+[timestart] 33920000
+[size] 1600 1109
+[pos] -1601 30
+*-14.389417 33992760 33877639 33890029 33902391 33914756 33927121 33939481 33951844 33964206 33976569 33988939 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 204
+[signals_width] 78
+[sst_expanded] 1
+[sst_vpaned_height] 336
+@28
+logic.mbus
+[pattern_trace] 1
+[pattern_trace] 0

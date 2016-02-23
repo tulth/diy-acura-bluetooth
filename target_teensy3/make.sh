@@ -1,0 +1,1 @@
+../target_desktop/make.sh
