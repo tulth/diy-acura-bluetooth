@@ -122,6 +122,18 @@ class ToggleList(list):
             resultList.append(str(togElem))
         return "\n".join(resultList)
 
+
+def intervalizedToggles(toggles, interval):
+    prevToggle = fromTimeValStr_ToggleElement(mbusTime.MbusTime(0), '1', "microsInt")
+    lowLevelToggleSeq = []
+    for toggle in toggles:
+        while toggle.time.val - prevToggle.time.val > interval:
+            yield ((int(prevToggle.val), prevToggle.time.val))
+            prevToggle.time = prevToggle.time + interval
+        yield ((int(toggle.val), int(toggle.time.val)))
+        prevToggle = toggle
+
+
 if __name__ == '__main__':
     print("library only!")
     sys.exit(1)
