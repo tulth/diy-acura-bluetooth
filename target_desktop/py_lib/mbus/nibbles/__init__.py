@@ -23,7 +23,17 @@ class MbusRawNibbleListStruct(ctypes.Structure):
         self.numNibbles=0
 
     def nibbleSeq2Str(self, nibbleSeq):
-        return "".join(["{:x}".format(nibble) for nibble in nibbleSeq])
+        resultList = []
+        for nibble in nibbleSeq:
+            if nibble == MBUS_LOW_TOO_LONG_CODE:
+                resultList.append('L')
+            elif nibble == MBUS_TIMEOUT_CODE:
+                resultList.append('T')
+            elif nibble < 16:
+                resultList.append("{:X}".format(nibble))
+            else:
+                resultList.append("X")
+        return "".join(resultList)
 
     def __str__(self):
         valSeq = tuple([self.nibbles[num] for num in range(self.numNibbles)])
