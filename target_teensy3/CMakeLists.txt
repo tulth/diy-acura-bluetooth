@@ -43,7 +43,7 @@ add_library(mbus STATIC ${MBUS_SRC})
 set_target_properties(mbus PROPERTIES COMPILE_FLAGS "-Wpedantic -Wextra -Werror")
 
 ##############################
-foreach( top_src mbus_main.cpp vcd_main.cpp )
+foreach( top_src mbus_main.cpp mbus_toggle_sniffer.cpp mbus_nibble_sniffer.cpp )
     string( REPLACE ".cpp" ".elf" top_elf ${top_src} )
     add_executable( ${top_elf} src/${top_src} )
     target_link_libraries( ${top_elf} mbus teensy3 )
