@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "circular_buffer.h"
 
 // ERROR IDS
 static const uint8_t ERR_ID_SIGNAL = 0x1;
@@ -112,9 +113,27 @@ typedef struct {
   MbusRawNibbleListStruct rawNibbles; 
 } MbusMsgStruct;
 
+typedef struct {
+  circular_buffer rxMsgFifo;
+  circular_buffer txMsgFifo;
+  MbusRawNibbleListStruct nibbles;
+} MbusLinkStruct;
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
+  extern void mbus_link_init(MbusLinkStruct *pMbusLink,
+                             MbusMsgStruct *rxMsgMemIn,
+                             size_t rxMsgMemInSize,
+                             MbusMsgStruct *txMsgMemIn,
+                             size_t txMsgMemInSize);
+  extern void mbus_link_rx_update(MbusLinkStruct *pMbusLink,
+                                   uint8_t rxNibble);
+   /* FIXME add tx capability */
+  extern bool mbus_link_rx_is_empty(MbusLinkStruct *pMbusLink);
+  extern void mbus_link_rx_pop(MbusLinkStruct *pMbusLink, MbusMsgStruct *pMbusMsgOut);
+  extern bool mbus_link_tx_is_full(MbusLinkStruct *pMbusLink);
+  extern void mbus_link_tx_push(MbusLinkStruct *pMbusLink, MbusMsgStruct *pMbusMsgIn);
   extern void mbus_link_parseMsg(uint8_t* nibbleSequence, unsigned int numNibbles, MbusMsgStruct *pMbusMsgOut);
   extern int mbus_link_msgToStr(MbusMsgStruct *pMbusMsgIn,
                                 char *strOut,
