@@ -6,10 +6,14 @@ import datetime
 import string
 import ctypes
 from .. import toggles
-from .. import *
+from .. import mbusTime
+from ... import mbus
 
 MAX_ARRAY_SIZE = 32
 
+MBUS_LOW_TOO_LONG_CODE = 16
+MBUS_TIMEOUT_CODE = 17
+MBUS_END_MSG_CODE = 18
 
 class MbusRawNibbleListStruct(ctypes.Structure):
     _fields_ = [
@@ -70,7 +74,7 @@ class MbusRawNibbleListStruct(ctypes.Structure):
         return nibbleSeq
 
     def toToggles(self, ):
-        currentTimeUs = self.time - 4 * self.numNibbles * BIT_TIME + NIBBLE_END_GAP_TIME
+        currentTimeUs = self.time - 4 * self.numNibbles * mbus.BIT_TIME + mbus.NIBBLE_END_GAP_TIME
         toggleList = toggles.ToggleList()
         for idx in range(self.numNibbles):
             nibble = int(self.nibbles[idx])
@@ -78,15 +82,15 @@ class MbusRawNibbleListStruct(ctypes.Structure):
                 # print("{:10}: drop nibble{} bit{}".format(currentTimeUs, nibble, bit))
                 toggleList.append(toggles.fromTimeValStr_ToggleElement(currentTimeUs, '0', "microsInt"))
                 if bit == '0':
-                    currentTimeUs += BIT_ZERO_LOW_TIME
+                    currentTimeUs += mbus.BIT_ZERO_LOW_TIME
                 else:
-                    currentTimeUs += BIT_ONE_LOW_TIME
+                    currentTimeUs += mbus.BIT_ONE_LOW_TIME
                 # print("{:10}: rise".format(currentTimeUs))
                 toggleList.append(toggles.fromTimeValStr_ToggleElement(currentTimeUs, '1', "microsInt"))
                 if bit == '0':
-                    currentTimeUs += (BIT_TIME - BIT_ZERO_LOW_TIME)
+                    currentTimeUs += (mbus.BIT_TIME - mbus.BIT_ZERO_LOW_TIME)
                 else:
-                    currentTimeUs += (BIT_TIME - BIT_ONE_LOW_TIME)
+                    currentTimeUs += (mbus.BIT_TIME - mbus.BIT_ONE_LOW_TIME)
         return toggleList
 
 
