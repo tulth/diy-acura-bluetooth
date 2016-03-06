@@ -28,7 +28,7 @@ def main(argv):
             log.info("Reading from stdin")
         else:
             log.info("Reading from {}".format(cfg.SOURCE))
-        nibbleListList = nibbles.MbusRawNibbleListStructList()
+        nibbleListList = nibbles.MbusRawNibbleListList()
         nibbleListList.fromFileName(cfg.SOURCE)
         msgList = sendToLinkRx(nibbleListList)
         if cfg.DESTINATION is None:
@@ -52,25 +52,25 @@ def sendToLinkRx(nibbleListList):
                            ctypes.byref(txMsgMem),
                            ctypes.sizeof(txMsgMem),
                            )
-    mbusMsg = MbusMsgStruct()
+    #mbusMsg = MbusMsgStruct()
     resultStrList = []
     for nibbleList in nibbleListList:
         nibbleSeq = tuple([nibbleList.nibbles[num] for num in range(nibbleList.numNibbles)])
         for nibble in nibbleSeq:
             libMbus.mbus_link_rx_update(ctypes.byref(mbusLink),
-                                        ctypes.c_uint8(nibble));
+                                        ctypes.c_uint8(nibble))
         libMbus.mbus_link_rx_update(ctypes.byref(mbusLink),
-                                    ctypes.c_uint8(nibbles.MBUS_END_MSG_CODE));
+                                    ctypes.c_uint8(nibbles.MBUS_END_MSG_CODE))
         while not libMbus.mbus_link_rx_is_empty(ctypes.byref(mbusLink)):
+            mbusMsg = MbusMsgStruct()
             libMbus.mbus_link_rx_pop(ctypes.byref(mbusLink),
                                      ctypes.byref(mbusMsg))
-            #print(mbusMsg)
             maxStrChar = 256
             strArg = (ctypes.c_char * maxStrChar)(*(b'X' * 256))
             strLen = libMbus.mbus_link_msgToStr(ctypes.byref(mbusMsg),
-                                                   ctypes.byref(strArg),
-                                                   ctypes.c_uint(len(strArg)),
-                                                   )
+                                                ctypes.byref(strArg),
+                                                ctypes.c_uint(len(strArg)),
+                                                )
             resultStr = ""
             for strIdx in range(strLen - 1):  # don't print ending null
                 resultStr += strArg[strIdx].decode("utf-8")
