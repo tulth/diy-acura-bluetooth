@@ -22,7 +22,7 @@ extern "C" {
 #endif // __cplusplus
   extern void circular_buffer_malloc_init(circular_buffer *cb, size_t capacity, size_t elementSize);
   extern void circular_buffer_malloc_free(circular_buffer *cb);
-  extern void circular_buffer_nomalloc_init(circular_buffer *cb, void *buf, size_t capacity, size_t elementSize);
+  extern void circular_buffer_nomalloc_init(circular_buffer *cb, void *buf, size_t bufSize, size_t elementSize);
   extern void circular_buffer_reset(circular_buffer *cb);
   extern void circular_buffer_push(circular_buffer *cb, const void *item);
   extern void circular_buffer_pop(circular_buffer *cb, void *item);

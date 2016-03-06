@@ -18,12 +18,12 @@ void circular_buffer_malloc_free(circular_buffer *cb)
     free(cb->buffer);
 }
 
-void circular_buffer_nomalloc_init(circular_buffer *cb, void *buf, size_t capacity, size_t elementSize)
+void circular_buffer_nomalloc_init(circular_buffer *cb, void *buf, size_t bufSize, size_t elementSize)
 {
     cb->buffer = buf;
     assert(cb->buffer != NULL);
-    cb->bufferEnd = (char *)cb->buffer + capacity * elementSize;
-    cb->capacity = capacity;
+    cb->capacity = bufSize / elementSize;
+    cb->bufferEnd = (char *)cb->buffer + cb->capacity * elementSize;
     cb->count = 0;
     cb->elementSize = elementSize;
     cb->head = cb->buffer;
