@@ -63,6 +63,7 @@ typedef struct {
   uint8_t disk; 
   uint8_t track; 
   bool eject; 
+  bool noshuttle; 
   bool busy; 
   bool repeatAll; 
   bool repeatOne; 

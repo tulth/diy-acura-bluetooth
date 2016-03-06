@@ -52,7 +52,7 @@ def sendToLinkRx(nibbleListList):
                            ctypes.byref(txMsgMem),
                            ctypes.sizeof(txMsgMem),
                            )
-    #mbusMsg = MbusMsgStruct()
+    # mbusMsg = MbusMsgStruct()
     resultStrList = []
     for nibbleList in nibbleListList:
         nibbleSeq = tuple([nibbleList.nibbles[num] for num in range(nibbleList.numNibbles)])

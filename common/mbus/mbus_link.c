@@ -22,7 +22,7 @@ void mbus_link_parseMsg(uint8_t* nibbleSequence, unsigned int numNibbles, MbusMs
 {
   int index;
   pMbusMsgOut->errId = 0;
-  //printf("%p %d\n", nibbleSequence, numNibbles);
+  // printf("%p %d\n", nibbleSequence, numNibbles);  // COMMENT ME OUT
   /****
    * copy in raw nibbles, up to the array size, also do size and invalid signal checking
    ****/
@@ -33,7 +33,7 @@ void mbus_link_parseMsg(uint8_t* nibbleSequence, unsigned int numNibbles, MbusMs
   else {
     pMbusMsgOut->rawNibbles.nibbleArrayLength = numNibbles;
   }
-  //printf("pMbusMsgOut->rawNibbles.nibbleArrayLength %d\n", pMbusMsgOut->rawNibbles.nibbleArrayLength);
+  // printf("pMbusMsgOut->rawNibbles.nibbleArrayLength %d\n", pMbusMsgOut->rawNibbles.nibbleArrayLength);  // COMMENT ME OUT
   for (index=0; index < pMbusMsgOut->rawNibbles.nibbleArrayLength; index++) {
     pMbusMsgOut->rawNibbles.nibbleArray[index] = nibbleSequence[index];
     if ((nibbleSequence[index] == 'T') ||
@@ -64,7 +64,7 @@ void mbus_link_parseMsg(uint8_t* nibbleSequence, unsigned int numNibbles, MbusMs
   else {
     parseCd2HeadBody(pMbusMsgOut);
   }
-  
+  // printf("leaving mbus_link_parseMsg\n");  // COMMENT ME OUT
 }
 
 void lengthCheck(MbusMsgStruct *pMbusMsgOut, bool lengthOk)
@@ -108,7 +108,7 @@ void parseHead2CdBody(MbusMsgStruct *pMbusMsgOut)
 {
   uint8_t cmd0 = pMbusMsgOut->rawNibbles.nibbleArray[1];
   uint8_t cmd1 = pMbusMsgOut->rawNibbles.nibbleArray[2];
-  // printf("cmd0 %d\n", cmd0);
+  // printf("cmd0 %d\n", cmd0);  // COMMENT ME OUT
   if (cmd0 == 0x8) {
     lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.nibbleArrayLength == 3));
     if (pMbusMsgOut->errId == 0) {
@@ -240,6 +240,7 @@ void parseChanging(MbusMsgStruct *pMbusMsgOut, uint8_t* nibbleSeq)
   pMbusMsgOut->parsed.body.changing.disk = nibbleSeq[1];
   pMbusMsgOut->parsed.body.changing.track = nibblePairToBcd(nibbleSeq[2], nibbleSeq[3]);
   pMbusMsgOut->parsed.body.changing.eject = (nibbleSeq[4] & (1 << 3)) != 0;
+  pMbusMsgOut->parsed.body.changing.noshuttle = (nibbleSeq[4] & (1 << 1)) != 0;
   pMbusMsgOut->parsed.body.changing.busy = (nibbleSeq[4] & (1 << 0)) != 0;
   pMbusMsgOut->parsed.body.changing.repeatAll = (nibbleSeq[5] & (1 << 3)) != 0;
   pMbusMsgOut->parsed.body.changing.repeatOne = (nibbleSeq[5] & (1 << 2)) != 0;
@@ -366,10 +367,11 @@ int msgParsedToStr(MbusMsgParsedStruct *parsedStructIn,
     _addStr("changing        ", &strOut, &workingMaxSize);
     workingMaxSize -= snprintf(strOut,
                                workingMaxSize,
-                               "disk#%d Trk%02d eject%d busy%d repeatAll%d repeatOne%d random%d done%d",
+                               "disk#%d Trk%02d eject%d noshuttle%d busy%d repeatAll%d repeatOne%d random%d done%d",
                                parsedStructIn->body.changing.disk,
                                parsedStructIn->body.changing.track,
                                parsedStructIn->body.changing.eject,
+                               parsedStructIn->body.changing.noshuttle,
                                parsedStructIn->body.changing.busy,
                                parsedStructIn->body.changing.repeatAll,
                                parsedStructIn->body.changing.repeatOne,
@@ -481,6 +483,7 @@ void mbus_link_init(MbusLinkStruct *pMbusLink,
 void mbus_link_rx_update(MbusLinkStruct *pMbusLink,
                          const uint8_t rxNibbleIn) 
 {
+  // printf("entering mbus_link_rx_update\n");  // COMMENT ME OUT
   pMbusLink->nibbles.nibbleArray[pMbusLink->nibbles.nibbleArrayLength] = rxNibbleIn;
   if (pMbusLink->nibbles.nibbleArrayLength < NIBBLE_ARRAY_SIZE) {
     pMbusLink->nibbles.nibbleArrayLength++;
@@ -489,7 +492,7 @@ void mbus_link_rx_update(MbusLinkStruct *pMbusLink,
     _mbus_link_rx_msg_push(pMbusLink);
     pMbusLink->nibbles.nibbleArrayLength = 0;
   }
-  
+  // printf("leaving mbus_link_rx_update\n");  // COMMENT ME OUT
 }
 
 bool mbus_link_rx_is_empty(MbusLinkStruct *pMbusLink)
@@ -506,11 +509,17 @@ void mbus_link_rx_pop(MbusLinkStruct *pMbusLink, MbusMsgStruct *pMbusMsgOut)
 void _mbus_link_rx_msg_push(MbusLinkStruct *pMbusLink)
 {
   MbusMsgStruct rxMbusMsg;
-  // printf("MSG! pMbusLink->nibbles.nibbleArrayLength: %d\n", pMbusLink->nibbles.nibbleArrayLength);
+  // printf("MSG! pMbusLink->nibbles.nibbleArrayLength: %d\n", pMbusLink->nibbles.nibbleArrayLength);  // COMMENT ME OUT
   mbus_link_parseMsg(pMbusLink->nibbles.nibbleArray,
                      pMbusLink->nibbles.nibbleArrayLength-1,
                      &rxMbusMsg);
-  circular_buffer_push(&(pMbusLink->rxMsgFifo), &rxMbusMsg);
+  // printf("pMbusLink->rxMsgFifo.count %d\n", pMbusLink->rxMsgFifo.count);  // COMMENT ME OUT
+  // printf("pMbusLink->rxMsgFifo.capacity %d\n", pMbusLink->rxMsgFifo.capacity);  // COMMENT ME OUT
+  if (!circular_buffer_is_full(&(pMbusLink->rxMsgFifo))) {
+    circular_buffer_push(&(pMbusLink->rxMsgFifo), &rxMbusMsg);
+  } else {
+    // printf("circ buf full, dropping!\n");  // COMMENT ME OUT
+  }
 }
 
 

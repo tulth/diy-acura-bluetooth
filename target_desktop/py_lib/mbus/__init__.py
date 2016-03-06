@@ -141,6 +141,7 @@ class MbusMsg_changing_BodyStruct(ctypes.Structure):
         ("disk", ctypes.c_uint8),
         ("track", ctypes.c_uint8),
         ("eject", ctypes.c_bool),
+        ("noshuttle", ctypes.c_bool),
         ("busy", ctypes.c_bool),
         ("repeatAll", ctypes.c_bool),
         ("repeatOne", ctypes.c_bool),
@@ -149,9 +150,9 @@ class MbusMsg_changing_BodyStruct(ctypes.Structure):
         ]
 
     def __str__(self):
-        argTuple = (self.disk, self.track, self.eject, self.busy, self.repeatAll,
+        argTuple = (self.disk, self.track, self.eject, self.noshuttle, self.busy, self.repeatAll,
                     self.repeatOne, self.random, self.done, )
-        fmtStr = "disk#{} Trk{:02d} eject{:d} busy{:d} repeatAll{:d} repeatOne{:d} random{:d} done{:d}"
+        fmtStr = "disk#{} Trk{:02d} eject{:d} noshuttle{:d} busy{:d} repeatAll{:d} repeatOne{:d} random{:d} done{:d}"
         return fmtStr.format(*argTuple)
 
 
@@ -234,7 +235,7 @@ class MbusMsgParsedStruct(ctypes.Structure):
             # FUTURE: bodyStr = str(self.body.headPowerOn)
             msgTypeStr = "headPowerOn"
         elif self.msgType == MSGTYPE_pong:
-            bodyStr = str(self.body.pong)
+            # FUTURE? bodyStr = str(self.body.pong)
             msgTypeStr = "pong"
         elif self.msgType == MSGTYPE_ackWait:
             # FUTURE: bodyStr = str(self.body.ackWait)
