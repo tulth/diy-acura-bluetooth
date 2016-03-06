@@ -62,7 +62,7 @@ class MbusLinkStruct(ctypes.Structure):
         ]
 
     def __str__(self):
-        return "tx {} / rx {}".format(self.tx, self.rx)
+        return "tx {} / rx {} / nibbles {}".format(self.txMsgFifo, self.rxMsgFifo, self.nibbles)
 
 
 # ERROR IDS
