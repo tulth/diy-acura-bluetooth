@@ -258,7 +258,7 @@ class MbusMsgParsedStruct(ctypes.Structure):
             msgTypeStr = "STRIFY ERR"
         return "{} {:15} {}".format(dirStr, msgTypeStr, bodyStr)
 
-    
+
 class MbusMsgStruct(ctypes.Structure):
     _fields_ = [
         ("errId", ctypes.c_uint8),  # 0 = no error

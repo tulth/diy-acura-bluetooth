@@ -12,7 +12,7 @@ from . import mbusTime
 from . import nibbles
 from . import toggles
 
-libSoName="build/libMbus.so"
+libSoName = "build/libMbus.so"
 
 def main(argv):
     cfg = parseArgs(argv)
