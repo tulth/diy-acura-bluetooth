@@ -45,6 +45,7 @@ extern "C" {
   extern void mbus_phy_tx_disable(MbusPhyStruct *pMbusPhy);
   extern bool mbus_phy_tx_is_busy(MbusPhyStruct *pMbusPhy);
   extern bool mbus_phy_tx_is_enabled(MbusPhyStruct *pMbusPhy);
+  extern bool mbus_phy_tx_is_empty(MbusPhyStruct *pMbusPhy);
   extern bool mbus_phy_tx_is_full(MbusPhyStruct *pMbusPhy);
   extern void mbus_phy_tx_push(MbusPhyStruct *pMbusPhy, uint8_t nibble);
 #ifdef __cplusplus

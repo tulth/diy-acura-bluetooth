@@ -257,6 +257,11 @@ bool _mbus_phy_tx_is_empty(MbusPhyTxRxStruct *pMbusPhyTx)
   return circular_buffer_is_empty(&(pMbusPhyTx->byteFifo));
 }
 
+bool mbus_phy_tx_is_empty(MbusPhyStruct *pMbusPhy)
+{
+  return circular_buffer_is_empty(&(pMbusPhy->tx.byteFifo));
+}
+
 // check that it is NOT empty first before calling!
 uint8_t _mbus_phy_tx_pop(MbusPhyTxRxStruct *pMbusPhyTx)
 {
