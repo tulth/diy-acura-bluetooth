@@ -84,14 +84,14 @@ extern "C" int main(void)
       usb_serial_putchar('\n');
     }
     /* if tx has something to send and in rx mode and not busy, tx enable */
-    if (!circular_buffer_is_empty(&(phy.tx.byteFifo)) &&
+    if (!mbus_phy_tx_is_empty(&phy) &&
         mbus_phy_rx_is_enabled(&phy) &&
         !mbus_phy_rx_is_busy(&phy)) {
       mbus_phy_rx_disable(&phy);
       mbus_phy_tx_enable(&phy);
-      /* else if tx is empty and tx is enabled, flip to rx */
-    } else if (circular_buffer_is_empty(&(phy.tx.byteFifo)) &&
-               mbus_phy_tx_is_enabled(&phy)) {
+      /* else if tx is enabled and not busy, flip to rx */
+    } else if (mbus_phy_tx_is_enabled(&phy) &&
+               !mbus_phy_tx_is_busy(&phy)) {
       mbus_phy_tx_disable(&phy);
       mbus_phy_rx_enable(&phy);
     }
