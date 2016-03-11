@@ -28,6 +28,8 @@ extern "C" int main(void)
                 rxByteBuf, BYTE_BUF_SIZE,
                 txByteBuf, BYTE_BUF_SIZE);
 
+  mbus_phy_rx_enable(&mbusPhyRx);
+
   while (1) {
     if (blinkMilliSecElapsed > 10000) {
       GPIOC_PTOR = 0x20;  // gpio toggle reg, for led bit

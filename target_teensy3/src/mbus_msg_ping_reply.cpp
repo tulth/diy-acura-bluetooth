@@ -42,9 +42,9 @@ extern "C" int main(void)
   mbus_phy_rx_enable(&phy);
   mbus_link_init(&link,
                  rxMsgMem,
-                 MSG_MEM_SIZE,
+                 MSG_MEM_SIZE * sizeof(MbusMsgStruct),
                  txMsgMem,
-                 MSG_MEM_SIZE);
+                 MSG_MEM_SIZE * sizeof(MbusMsgStruct));
 
   while (1) {
     /* blink */
