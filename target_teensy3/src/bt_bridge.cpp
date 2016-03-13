@@ -1,14 +1,12 @@
 #include <stdint.h>
 #include <WProgram.h>
 
-#define BYTE_BUF_SIZE 64
-
-#define USBSERIAL Serial
-#define HWSERIAL1 Serial1
-
 #define PINBIT_LED (1<<5)
 #define PINBIT_CMDLO (1<<13)
 #define PINBIT_STATECHANGE (1<<7)
+
+#define USBSERIAL Serial
+#define HWSERIAL1 Serial1
 
 void setCmdMode(void);
 void readUntilNewline(void);
@@ -19,12 +17,10 @@ extern "C" int main(void)
   int incomingByte;
 
   PORTA_PCR13 = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* CMD LO */
-  GPIOA_PDDR |= PINBIT_CMDLO;  /* gpio data direction reg, for cmd lo */
-
-  PORTD_PCR7 = PORT_PCR_PE  | PORT_PCR_PS  | PORT_PCR_MUX(1); /* state change bit */
-  GPIOD_PDDR |= PINBIT_CMDLO;  /* gpio data direction reg, for cmd lo */
-
   PORTC_PCR5 = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* LED */
+  PORTD_PCR7 = PORT_PCR_PE  | PORT_PCR_PS  | PORT_PCR_MUX(1); /* state change bit */
+
+  GPIOA_PDDR |= PINBIT_CMDLO;  /* gpio data direction reg, for cmd lo */
   GPIOC_PDDR |= PINBIT_LED;  /* gpio data direction reg, for led bit */
 
   GPIOC_PCOR = PINBIT_LED;  /* set led bit low */
