@@ -15,7 +15,9 @@ void parsePlayState(MbusRxMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq);
 void parseDiskInfo(MbusRxMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq);
 void _mbus_link_rx_msg_push(MbusLinkStruct *pMbusLink);
 void _mbus_link_tx_pop(MbusLinkStruct *pMbusLink,
-                       MbusRxMsgStruct *pMbusMsgOut);
+                       MbusTxMsgStruct *pMbusMsgOut);
+
+void _sendPendingTxMsg(MbusLinkStruct *pMbusLink);
 
 
 void mbus_link_parseMsg(uint8_t* nibbleSequence, unsigned int numNibbles, MbusRxMsgStruct *pMbusMsgOut)
@@ -47,7 +49,7 @@ void mbus_link_parseMsg(uint8_t* nibbleSequence, unsigned int numNibbles, MbusRx
     return;
   }
   /****
-   * verify checksum 
+   * verify checksum
    ****/
   doCheckSum(pMbusMsgOut);
   if (pMbusMsgOut->errId != 0) {
@@ -57,7 +59,7 @@ void mbus_link_parseMsg(uint8_t* nibbleSequence, unsigned int numNibbles, MbusRx
   if (pMbusMsgOut->errId != 0) {
     return;
   }
-  
+
   if (pMbusMsgOut->parsed.directionH2C) {
     parseHead2CdBody(pMbusMsgOut);
   }
@@ -281,7 +283,7 @@ static inline void _addChar(char charToAdd, char **pStrOut, unsigned int *pStrOu
     (*pStrOutMaxSize)--;
   }
 }
-            
+
 static inline void _addStr(char *strToAdd, char **pStrOut, unsigned int *pStrOutMaxSize)
 {
   while (*strToAdd != '\0') {
@@ -292,7 +294,7 @@ static inline void _addStr(char *strToAdd, char **pStrOut, unsigned int *pStrOut
   /* _addChar('\0', pStrOut, pStrOutMaxSize); */
   /* pStrOut--; */
 }
-            
+
 int msgParsedToStr(MbusMsgParsedStruct *parsedStructIn,
                    char *strOut,
                    unsigned int strOutMaxSize
@@ -429,7 +431,7 @@ int mbus_link_msgToStr(MbusRxMsgStruct *pMbusMsgIn,
   unsigned int workingMaxSize = strOutMaxSize;
   workingStr[workingMaxSize-1] = '\0';
   workingMaxSize--;
-  
+
   for(idx = 0; (idx < 18); idx++) {
     if (idx < pMbusMsgIn->rawNibbles.numNibbles) {
       _addChar(mbus_phy_rxnibble2ascii(pMbusMsgIn->rawNibbles.nibbles[idx]), &workingStr, &workingMaxSize);
@@ -439,7 +441,7 @@ int mbus_link_msgToStr(MbusRxMsgStruct *pMbusMsgIn,
     }
   }
   _addChar(' ', &workingStr, &workingMaxSize);
-  
+
   if (pMbusMsgIn->errId == ERR_ID_SIGNAL) {
     workingMaxSize -= snprintf(workingStr, workingMaxSize, "ERROR: Bad bus signaling");
   }
@@ -466,9 +468,9 @@ int mbus_link_msgToStr(MbusRxMsgStruct *pMbusMsgIn,
 void mbus_link_init(MbusLinkStruct *pMbusLink,
                     MbusRxMsgStruct *rxMsgMemIn,
                     size_t rxMsgMemInSize,
-                    MbusRxMsgStruct *txMsgMemIn,
-                    size_t txMsgMemInSize
-                    )
+                    MbusTxMsgStruct *txMsgMemIn,
+                    size_t txMsgMemInSize,
+                    circular_buffer *phyTxNibbleFifo)
 {
   circular_buffer_nomalloc_init(&(pMbusLink->rxMsgFifo),
                                 rxMsgMemIn,
@@ -477,18 +479,58 @@ void mbus_link_init(MbusLinkStruct *pMbusLink,
   circular_buffer_nomalloc_init(&(pMbusLink->txMsgFifo),
                                 txMsgMemIn,
                                 txMsgMemInSize,
-                                sizeof(MbusRxMsgStruct));
+                                sizeof(MbusTxMsgStruct));
+  pMbusLink->rxNotTxMode = true;
+  pMbusLink->phyTxNibbleFifo = phyTxNibbleFifo;  
 }
 
-void mbus_link_rx_update(MbusLinkStruct *pMbusLink,
-                         const uint8_t rxNibbleIn) 
+void mbus_link_update(MbusLinkStruct *pMbusLink,
+                      const bool mbusPhyRxBusy,
+                      const bool mbusPhyTxBusy,
+                      bool *phyDirectionUpdated)
+{
+  *phyDirectionUpdated = false;  /* until proven otherwise */
+  
+  /* if in rx mode, and tx has something to send and phy rx not busy, switch to tx mode */
+  if (pMbusLink->rxNotTxMode) {
+    if (!mbusPhyRxBusy && !mbus_link_tx_is_empty(pMbusLink)) {
+      pMbusLink->rxNotTxMode = false;
+      *phyDirectionUpdated = true;
+    }
+    /* else tx mode...if phy tx not busy, queue empty, flip back to rx */
+  } else {
+    if (!mbusPhyTxBusy && mbus_link_tx_is_empty(pMbusLink)) {
+      pMbusLink->rxNotTxMode = true;
+      *phyDirectionUpdated = true;
+    } else {
+      _sendPendingTxMsg(pMbusLink);
+    }
+  }
+}
+
+void _sendPendingTxMsg(MbusLinkStruct *pMbusLink)
+{
+  MbusTxMsgStruct txMsg;
+  uint64_t mask;
+  uint8_t nibble, idx;
+  
+  _mbus_link_tx_pop(pMbusLink, &txMsg);
+
+  for (mask = 0xf << txMsg.nibbles.numNibbles; mask != 0x0; mask = mask >> 4) {
+    nibble = mask & txMsg.nibbles.packNibbles;
+    circular_buffer_push(pMbusLink->phyTxNibbleFifo, &nibble);
+  }
+}
+
+void mbus_link_rx_push_nibble(MbusLinkStruct *pMbusLink,
+                              const uint8_t rxNibble)
 {
   // printf("entering mbus_link_rx_update\n");  // COMMENT ME OUT
-  pMbusLink->nibbles.nibbles[pMbusLink->nibbles.numNibbles] = rxNibbleIn;
+  pMbusLink->nibbles.nibbles[pMbusLink->nibbles.numNibbles] = rxNibble;
   if (pMbusLink->nibbles.numNibbles < NIBBLE_ARRAY_SIZE) {
     pMbusLink->nibbles.numNibbles++;
   }
-  if (rxNibbleIn == MBUS_END_MSG_CODE) {
+  if (rxNibble == MBUS_END_MSG_CODE) {
     _mbus_link_rx_msg_push(pMbusLink);
     pMbusLink->nibbles.numNibbles = 0;
   }
@@ -498,6 +540,11 @@ void mbus_link_rx_update(MbusLinkStruct *pMbusLink,
 bool mbus_link_rx_is_empty(MbusLinkStruct *pMbusLink)
 {
   return circular_buffer_is_empty(&(pMbusLink->rxMsgFifo));
+}
+
+bool mbus_link_tx_is_empty(MbusLinkStruct *pMbusLink)
+{
+  return circular_buffer_is_empty(&(pMbusLink->txMsgFifo));
 }
 
 void mbus_link_rx_pop(MbusLinkStruct *pMbusLink, MbusRxMsgStruct *pMbusMsgOut)
@@ -530,13 +577,13 @@ bool mbus_link_tx_is_full(MbusLinkStruct *pMbusLink)
 
 // check that it is NOT empty first before calling!
 void _mbus_link_tx_pop(MbusLinkStruct *pMbusLink,
-                       MbusRxMsgStruct *pMbusMsgOut)
+                       MbusTxMsgStruct *pMbusMsgOut)
 {
   circular_buffer_pop(&(pMbusLink->txMsgFifo), pMbusMsgOut);
 }
 
 void mbus_link_tx_push(MbusLinkStruct *pMbusLink,
-                       MbusRxMsgStruct *pMbusMsgIn)
+                       MbusTxMsgStruct *pMbusMsgIn)
 {
   circular_buffer_push(&(pMbusLink->txMsgFifo), pMbusMsgIn);
 }

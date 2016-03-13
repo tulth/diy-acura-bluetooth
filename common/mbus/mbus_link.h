@@ -35,98 +35,100 @@ typedef struct {
 
 typedef struct {
   uint64_t packNibbles;
-  uint8_t numNibbles; 
+  uint8_t numNibbles;
 } MbusPackedNibblesStruct;
 
 // HEAD2CD MSG BODY
 typedef struct {
-  bool resume; 
-  bool stop; 
-  bool scanStop; 
-  bool fastReverse; 
-  bool fastForward; 
-  bool pause; 
-  bool play; 
+  bool resume;
+  bool stop;
+  bool scanStop;
+  bool fastReverse;
+  bool fastForward;
+  bool pause;
+  bool play;
 } MbusMsg_setPlayState_BodyStruct;
 
 typedef struct {
-  uint8_t disk; 
-  uint8_t track; 
-  bool pause; 
-  bool play; 
-  bool random; 
+  uint8_t disk;
+  uint8_t track;
+  bool pause;
+  bool play;
+  bool random;
 } MbusMsg_setDiskTrack_BodyStruct;
 
 typedef struct {
-  bool repeatAll; 
-  bool repeatOne; 
-  bool introScan; 
-  bool random; 
+  bool repeatAll;
+  bool repeatOne;
+  bool introScan;
+  bool random;
 } MbusMsg_setMode_BodyStruct;
 
 typedef struct {
-  uint8_t disk; 
-  uint8_t track; 
-  bool eject; 
-  bool noshuttle; 
-  bool busy; 
-  bool repeatAll; 
-  bool repeatOne; 
-  bool random; 
-  bool done; 
+  uint8_t disk;
+  uint8_t track;
+  bool eject;
+  bool noshuttle;
+  bool busy;
+  bool repeatAll;
+  bool repeatOne;
+  bool random;
+  bool done;
 } MbusMsg_changing_BodyStruct;
 
 typedef struct {
-  uint8_t track; 
-  uint8_t index; 
-  uint8_t minute; 
-  uint8_t second; 
-  bool repeatAll; 
-  bool repeatOne; 
-  bool introScan; 
-  bool random; 
-  bool stopped; 
-  bool paused; 
-  bool play; 
+  uint8_t track;
+  uint8_t index;
+  uint8_t minute;
+  uint8_t second;
+  bool repeatAll;
+  bool repeatOne;
+  bool introScan;
+  bool random;
+  bool stopped;
+  bool paused;
+  bool play;
 } MbusMsg_playState_BodyStruct;
 
 typedef struct {
-  uint8_t disk; 
-  uint8_t tracks; 
-  uint8_t minutes; 
-  uint8_t seconds; 
-  uint8_t flags; 
+  uint8_t disk;
+  uint8_t tracks;
+  uint8_t minutes;
+  uint8_t seconds;
+  uint8_t flags;
 } MbusMsg_diskInfo_BodyStruct;
 
 typedef union {
-  MbusMsg_setPlayState_BodyStruct setPlayState; 
-  MbusMsg_setDiskTrack_BodyStruct setDiskTrack; 
-  MbusMsg_setMode_BodyStruct setMode; 
-  MbusMsg_changing_BodyStruct changing; 
-  MbusMsg_playState_BodyStruct playState; 
-  MbusMsg_diskInfo_BodyStruct diskInfo; 
+  MbusMsg_setPlayState_BodyStruct setPlayState;
+  MbusMsg_setDiskTrack_BodyStruct setDiskTrack;
+  MbusMsg_setMode_BodyStruct setMode;
+  MbusMsg_changing_BodyStruct changing;
+  MbusMsg_playState_BodyStruct playState;
+  MbusMsg_diskInfo_BodyStruct diskInfo;
 } MbusMsgBodyUnion;
 
 typedef struct {
-  bool directionH2C; 
-  uint8_t msgType; 
-  MbusMsgBodyUnion body; 
+  bool directionH2C;
+  uint8_t msgType;
+  MbusMsgBodyUnion body;
 } MbusMsgParsedStruct;
 
 typedef struct {
-  MbusPackedNibblesStruct nibbles; 
+  MbusPackedNibblesStruct nibbles;
 } MbusTxMsgStruct;
 
 typedef struct {
-  uint8_t errId; 
-  MbusMsgParsedStruct parsed; 
-  MbusRawNibbleListStruct rawNibbles; 
+  uint8_t errId;
+  MbusMsgParsedStruct parsed;
+  MbusRawNibbleListStruct rawNibbles;
 } MbusRxMsgStruct;
 
 typedef struct {
   circular_buffer rxMsgFifo;
   circular_buffer txMsgFifo;
   MbusRawNibbleListStruct nibbles;
+  bool rxNotTxMode;
+  circular_buffer *phyTxNibbleFifo;
 } MbusLinkStruct;
 
 #ifdef __cplusplus
@@ -135,19 +137,26 @@ extern "C" {
   extern void mbus_link_init(MbusLinkStruct *pMbusLink,
                              MbusRxMsgStruct *rxMsgMemIn,
                              size_t rxMsgMemInSize,
-                             MbusRxMsgStruct *txMsgMemIn,
-                             size_t txMsgMemInSize);
-  extern void mbus_link_rx_update(MbusLinkStruct *pMbusLink,
-                                   uint8_t rxNibble);
-   /* FIXME add tx capability */
+                             MbusTxMsgStruct *txMsgMemIn,
+                             size_t txMsgMemInSize,
+                             circular_buffer *phyTxNibbleFifo);
+  extern void mbus_link_update(MbusLinkStruct *pMbusLink,
+                               const bool mbusPhyRxBusy,
+                               const bool mbusPhyTxBusy,
+                               bool *phyDirectionUpdated);
+  /* FIXME add tx capability */
   extern bool mbus_link_rx_is_empty(MbusLinkStruct *pMbusLink);
   extern void mbus_link_rx_pop(MbusLinkStruct *pMbusLink, MbusRxMsgStruct *pMbusMsgOut);
+  extern void mbus_link_rx_push_nibble(MbusLinkStruct *pMbusLink,
+                                       const uint8_t rxNibble);
+  extern bool mbus_link_tx_is_empty(MbusLinkStruct *pMbusLink);
   extern bool mbus_link_tx_is_full(MbusLinkStruct *pMbusLink);
-  extern void mbus_link_tx_push(MbusLinkStruct *pMbusLink, MbusRxMsgStruct *pMbusMsgIn);
+  extern void mbus_link_tx_push(MbusLinkStruct *pMbusLink, MbusTxMsgStruct *pMbusMsgIn);
   extern void mbus_link_parseMsg(uint8_t* nibbleSequence, unsigned int numNibbles, MbusRxMsgStruct *pMbusMsgOut);
   extern int mbus_link_msgToStr(MbusRxMsgStruct *pMbusMsgIn,
                                 char *strOut,
                                 unsigned int strOutMaxSize);
+  static inline bool mbus_link_is_direction_rx(MbusLinkStruct *pMbusLink) { return pMbusLink->rxNotTxMode; }
 #ifdef __cplusplus
 }
 #endif // __cplusplus

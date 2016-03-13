@@ -18,11 +18,12 @@ extern "C" int main(void)
   uint8_t txByteMem[BYTE_MEM_SIZE];
   uint8_t rxNibble;
   MbusRxMsgStruct rxMsgMem[MSG_MEM_SIZE];
-  MbusRxMsgStruct txMsgMem[MSG_MEM_SIZE];
+  MbusTxMsgStruct txMsgMem[MSG_MEM_SIZE];
   MbusRxMsgStruct rxMsg;
   MbusPhyStruct phy;
   MbusLinkStruct link;
   bool driveMbusPinLo = false;
+  bool phyDirectionUpdated;
   char msgStr[MSG_STR_SIZE];
   int msgStrLen;
   
@@ -43,7 +44,8 @@ extern "C" int main(void)
                  rxMsgMem,
                  MSG_MEM_SIZE * sizeof(MbusRxMsgStruct),
                  txMsgMem,
-                 MSG_MEM_SIZE * sizeof(MbusRxMsgStruct));
+                 MSG_MEM_SIZE * sizeof(MbusTxMsgStruct),
+                 &(phy.tx.byteFifo));
 
   while (1) {
     /* blink */
@@ -67,10 +69,11 @@ extern "C" int main(void)
     /* phy->link */
     if (!mbus_phy_rx_is_empty(&phy)) {
       rxNibble = mbus_phy_rx_pop(&phy);
-      mbus_link_rx_update(&link, rxNibble);
+      mbus_link_rx_push_nibble(&link, rxNibble);
     }
     
     /* link */
+    mbus_link_update(&link, mbus_phy_rx_is_busy(&phy), mbus_phy_tx_is_busy(&phy), &phyDirectionUpdated);
     if (!mbus_link_rx_is_empty(&link)) {
       mbus_link_rx_pop(&link, &rxMsg);
       msgStrLen = mbus_link_msgToStr(&rxMsg,

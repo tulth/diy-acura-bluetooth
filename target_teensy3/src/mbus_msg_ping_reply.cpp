@@ -19,11 +19,12 @@ extern "C" int main(void)
   uint8_t txByteMem[BYTE_MEM_SIZE];
   uint8_t rxNibble;
   MbusRxMsgStruct rxMsgMem[MSG_MEM_SIZE];
-  MbusRxMsgStruct txMsgMem[MSG_MEM_SIZE];
+  MbusTxMsgStruct txMsgMem[MSG_MEM_SIZE];
   MbusRxMsgStruct rxMsg;
   MbusPhyStruct phy;
   MbusLinkStruct link;
   bool driveMbusPinLo = false;
+  bool phyDirectionUpdated;
   char msgStr[MSG_STR_SIZE];
   int msgStrLen;
   
@@ -48,7 +49,8 @@ extern "C" int main(void)
                  rxMsgMem,
                  MSG_MEM_SIZE * sizeof(MbusRxMsgStruct),
                  txMsgMem,
-                 MSG_MEM_SIZE * sizeof(MbusRxMsgStruct));
+                 MSG_MEM_SIZE * sizeof(MbusTxMsgStruct),
+                 &(phy.tx.byteFifo));
 
   while (1) {
     /* blink */
@@ -72,10 +74,22 @@ extern "C" int main(void)
     /* phy->link */
     if (!mbus_phy_rx_is_empty(&phy)) {
       rxNibble = mbus_phy_rx_pop(&phy);
-      mbus_link_rx_update(&link, rxNibble);
+      mbus_link_rx_push_nibble(&link, rxNibble);
     }
+
     
     /* link */
+    mbus_link_update(&link, mbus_phy_rx_is_busy(&phy), mbus_phy_tx_is_busy(&phy), &phyDirectionUpdated);
+    if (phyDirectionUpdated) {
+      if (mbus_link_is_direction_rx(&link)) {
+        mbus_phy_tx_disable(&phy);
+        mbus_phy_rx_enable(&phy);
+      } else {
+        mbus_phy_rx_disable(&phy);
+        mbus_phy_tx_enable(&phy);
+      }
+    }
+    /* print link rx msg if one is available */
     if (!mbus_link_rx_is_empty(&link)) {
       mbus_link_rx_pop(&link, &rxMsg);
       if ((!rxMsg.errId) && (rxMsg.parsed.directionH2C)) {
@@ -92,18 +106,7 @@ extern "C" int main(void)
       usb_serial_write(msgStr, msgStrLen - 1);  // -1 to skip null terminator
       usb_serial_putchar('\n');
     }
-    /* if tx has something to send and in rx mode and not busy, tx enable */
-    if (!mbus_phy_tx_is_empty(&phy) &&
-        !mbus_phy_tx_is_enabled(&phy) &&
-        !mbus_phy_rx_is_busy(&phy)) {
-      //      mbus_phy_rx_disable(&phy);
-      mbus_phy_tx_enable(&phy);
-      /* else if tx is enabled and not busy, flip to rx */
-    } else if (mbus_phy_tx_is_enabled(&phy) &&
-               !mbus_phy_tx_is_busy(&phy)) {
-      mbus_phy_tx_disable(&phy);
-      mbus_phy_rx_enable(&phy);
-    }
+    
     yield();
   }
 }
