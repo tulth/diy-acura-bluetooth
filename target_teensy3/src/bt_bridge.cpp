@@ -3,33 +3,64 @@
 
 #define BYTE_BUF_SIZE 64
 
-int ledPin = 13;
-int ctsPin = 2;
-int rtsPin = 3;
-int cmdLowPin = 4;
-int stateChangePin = 5;
+#define USBSERIAL Serial
+#define HWSERIAL1 Serial1
+
+#define PINBIT_LED (1<<5)
+#define PINBIT_CMDLO (1<<13)
+#define PINBIT_STATECHANGE (1<<7)
+
+void setCmdMode(void);
+void readUntilNewline(void);
+void reconnectBluetooth(void);
 
 extern "C" int main(void)
 {
-  setup();
+  int incomingByte;
+
+  PORTA_PCR13 = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* CMD LO */
+  GPIOA_PDDR |= PINBIT_CMDLO;  /* gpio data direction reg, for cmd lo */
+
+  PORTD_PCR7 = PORT_PCR_PE  | PORT_PCR_PS  | PORT_PCR_MUX(1); /* state change bit */
+  GPIOD_PDDR |= PINBIT_CMDLO;  /* gpio data direction reg, for cmd lo */
+
+  PORTC_PCR5 = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* LED */
+  GPIOC_PDDR |= PINBIT_LED;  /* gpio data direction reg, for led bit */
+
+  GPIOC_PCOR = PINBIT_LED;  /* set led bit low */
+
+  HWSERIAL1.begin(115200);
+  USBSERIAL.begin(115200);
+  setCmdMode();
+  reconnectBluetooth();
+
   while (1) {
-    loop();
+    if (USBSERIAL.available() > 0) {
+      GPIOC_PSOR = PINBIT_LED;  /* set led high */
+      incomingByte = USBSERIAL.read();
+      HWSERIAL1.write(incomingByte);
+      GPIOC_PCOR = PINBIT_LED;  /* set led lo */
+    }
+    if (HWSERIAL1.available() > 0) {
+      GPIOC_PSOR = PINBIT_LED;  /* set led high */
+      incomingByte = HWSERIAL1.read();
+      USBSERIAL.write(incomingByte);
+      GPIOC_PCOR = PINBIT_LED;  /* set led lo */
+    }
     yield();
   }
 }
 
-#define HWSERIAL Serial1
-
-String gReadLine; 
+String gReadLine;
 uint8_t gReadLineDone;
 
-void readUntilNewline()
+void readUntilNewline(void)
 {
   char incomingByte;
-  if (HWSERIAL.available() > 0) {
-    incomingByte = HWSERIAL.read();
+  if (HWSERIAL1.available() > 0) {
+    incomingByte = HWSERIAL1.read();
     gReadLine.concat(incomingByte);
-    
+
     if (gReadLine.endsWith('\n')) {
       gReadLineDone =  1;
     }
@@ -42,50 +73,21 @@ void setCmdMode(void)
   uint8_t done = 0;
 
   while(!done) {
-    digitalWrite(cmdLowPin, HIGH);
+    GPIOA_PSOR = PINBIT_CMDLO;  /* set cmd lo 1 */
     delay(100);
-    digitalWrite(cmdLowPin, LOW);
+    GPIOA_PCOR = PINBIT_CMDLO;  /* set cmd lo 0 */
     gReadLineDone = 0;
     while (!gReadLineDone) {
       readUntilNewline();
     }
     if (gReadLine.startsWith("CMD")) {
       done = 1;
-    } 
-  }    
-}
-
-void reconnectBluetooth()
-{
-  HWSERIAL.println("B");
-}
-
-void setup()
-{
-  pinMode(ledPin, OUTPUT);
-  pinMode(cmdLowPin, OUTPUT);
-  pinMode(stateChangePin, INPUT);
-  digitalWrite(ledPin, LOW);
-  HWSERIAL.begin(115200);
-  Serial.begin(115200);
-  setCmdMode();
-  reconnectBluetooth();
-}
-
-void loop()
-{
-  int incomingByte;
-        
-  if (Serial.available() > 0) {
-    digitalWrite(ledPin, HIGH);
-    incomingByte = Serial.read();
-    HWSERIAL.write(incomingByte);
-    digitalWrite(ledPin, LOW);
-  }
-  if (HWSERIAL.available() > 0) {
-    digitalWrite(ledPin, HIGH);
-    incomingByte = HWSERIAL.read();
-    Serial.write(incomingByte);
-    digitalWrite(ledPin, LOW);
+    }
   }
 }
+
+void reconnectBluetooth(void)
+{
+  HWSERIAL1.println("B");
+}
+

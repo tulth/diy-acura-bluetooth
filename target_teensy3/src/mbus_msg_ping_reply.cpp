@@ -12,6 +12,9 @@
 #define MSG_MEM_SIZE 2
 #define MSG_STR_SIZE 256
 
+#define PINBIT_LED (1<<5)
+#define PINBIT_MBUS_SENSE (1<<2)
+
 extern "C" int main(void)
 {
   elapsedMillis blinkMilliSecElapsed;
@@ -33,7 +36,7 @@ extern "C" int main(void)
   PORTC_PCR2 = PORT_PCR_PE  | PORT_PCR_PS  | PORT_PCR_MUX(1); /* MBUS SENSE */
   PORTC_PCR1 = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* MBUS DRIVE LO */
   
-  GPIOC_PDDR |= (1<<5);  /* gpio data direction reg, for led bit */
+  GPIOC_PDDR |= PINBIT_LED;  /* gpio data direction reg, for led bit */
   GPIOC_PDDR |= (1<<1);  /* gpio data direction reg, for driveMbusPinLo */
   GPIOC_PCOR = (1<<1);  // don't drive low
 
@@ -55,14 +58,14 @@ extern "C" int main(void)
   while (1) {
     /* blink */
     if (blinkMilliSecElapsed > 1000) {
-      GPIOC_PTOR = 0x20;  // gpio toggle reg, for led bit
+      GPIOC_PTOR = PINBIT_LED;  // gpio toggle reg, for led bit
       blinkMilliSecElapsed = 0;
     }
 
     /* phy */
     mbus_phy_update(&phy,
                     micros(),
-                    (GPIOC_PDIR & 0x04) != 0,
+                    (GPIOC_PDIR & PINBIT_MBUS_SENSE) != 0,
                     &driveMbusPinLo
                     );
     if (driveMbusPinLo) {
