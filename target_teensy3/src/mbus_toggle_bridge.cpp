@@ -34,7 +34,7 @@ extern "C" int main(void)
     }
 
     if (usb_serial_available()) {
-      driveMbusPinLo = (usb_serial_getchar() == 0);  /* caution! note the invert! */
+      driveMbusPinLo = (usb_serial_getchar() == '0');  /* caution! note the invert! */
       if (driveMbusPinLo) {
         GPIOC_PSOR = (1<<1);  // usb 0, so we drive 1 out, which is inverted by the drive transistor
       } else {
