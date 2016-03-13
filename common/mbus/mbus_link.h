@@ -33,6 +33,11 @@ typedef struct {
   uint8_t nibbleArrayLength;
 } MbusRawNibbleListStruct;
 
+typedef struct {
+  uint64_t packNibbles;
+  uint8_t numNibbles; 
+} MbusPackedNibblesStruct;
+
 // HEAD2CD MSG BODY
 typedef struct {
   bool resume; 

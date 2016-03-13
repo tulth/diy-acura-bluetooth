@@ -40,6 +40,21 @@ class MbusRawNibbleListStruct(ctypes.Structure):
         return nibbleSeq2Str(seq)
 
 
+class MbusPackedNibblesStruct(ctypes.Structure):
+    _fields_ = [
+        ("packNibbles", ctypes.c_uint64),
+        ("numNibbles", ctypes.c_uint8),
+        ]
+
+    def __str__(self):
+        nibList = []
+        for nibIdx in range(self.numNibbles):
+            nibble = (self.packNibbles >> (self.numNibbles - nibIdx)) & 0xF
+            nibList.append("{:x}".format(nibble))
+        seq = "".join(nibList)
+        return nibbleSeq2Str(seq)
+
+
 class MbusRawNibbleList(object):
 
     def __init__(self, mbusTimeFormat="pyTimeElapsed"):
