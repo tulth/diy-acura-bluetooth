@@ -118,9 +118,9 @@ void _mbus_phy_rx_init(MbusPhyTxRxStruct *pMbusPhyRx,
                        size_t rxByteMemInSize
                        )
 {
-  circular_buffer_nomalloc_init(&(pMbusPhyRx->byteFifo),
-                                rxByteMemIn,
-                                rxByteMemInSize, 1);
+  fifo_nomalloc_init(&(pMbusPhyRx->byteFifo),
+                     rxByteMemIn,
+                     rxByteMemInSize, 1);
   pMbusPhyRx->state = MBUS_STATE_RX_DISABLED;
   pMbusPhyRx->bitShifter = RX_BIT_SHIFTER_INIT;
   pMbusPhyRx->microSecTimeStamp = 0;
@@ -131,9 +131,9 @@ void _mbus_phy_tx_init(MbusPhyTxRxStruct *pMbusPhyTx,
                        size_t txByteMemInSize
                        )
 {
-  circular_buffer_nomalloc_init(&(pMbusPhyTx->byteFifo),
-                                txByteMemIn,
-                                txByteMemInSize, 1);
+  fifo_nomalloc_init(&(pMbusPhyTx->byteFifo),
+                     txByteMemIn,
+                     txByteMemInSize, 1);
   pMbusPhyTx->state = MBUS_STATE_TX_DISABLED;
   pMbusPhyTx->bitShifter = TX_BIT_SHIFTER_INIT;
   pMbusPhyTx->microSecTimeStamp = 0;
@@ -228,20 +228,20 @@ void _mbus_phy_rx_update(MbusPhyTxRxStruct *pMbusPhyRx,
 
 bool mbus_phy_rx_is_empty(MbusPhyStruct *pMbusPhy)
 {
-  return circular_buffer_is_empty(&(pMbusPhy->rx.byteFifo));
+  return fifo_is_empty(&(pMbusPhy->rx.byteFifo));
 }
 
 // internal use only!
 void _mbus_phy_rx_push(MbusPhyTxRxStruct *pMbusPhyRx, uint8_t byte)
 {
-  circular_buffer_push(&(pMbusPhyRx->byteFifo), &byte);
+  fifo_push(&(pMbusPhyRx->byteFifo), &byte);
 }
 
 // check that it is NOT empty first before calling!
 uint8_t mbus_phy_rx_pop(MbusPhyStruct *pMbusPhy)
 {
   uint8_t returnVal;
-  circular_buffer_pop(&(pMbusPhy->rx.byteFifo), &returnVal);
+  fifo_pop(&(pMbusPhy->rx.byteFifo), &returnVal);
   return returnVal;
 }
 
@@ -254,19 +254,19 @@ static inline bool _txShiftOutBit(uint8_t *shifter)
 
 bool _mbus_phy_tx_is_empty(MbusPhyTxRxStruct *pMbusPhyTx)
 {
-  return circular_buffer_is_empty(&(pMbusPhyTx->byteFifo));
+  return fifo_is_empty(&(pMbusPhyTx->byteFifo));
 }
 
 bool mbus_phy_tx_is_empty(MbusPhyStruct *pMbusPhy)
 {
-  return circular_buffer_is_empty(&(pMbusPhy->tx.byteFifo));
+  return fifo_is_empty(&(pMbusPhy->tx.byteFifo));
 }
 
 // check that it is NOT empty first before calling!
 uint8_t _mbus_phy_tx_pop(MbusPhyTxRxStruct *pMbusPhyTx)
 {
   uint8_t returnVal;
-  circular_buffer_pop(&(pMbusPhyTx->byteFifo), &returnVal);
+  fifo_pop(&(pMbusPhyTx->byteFifo), &returnVal);
   return returnVal;
 }
 
@@ -342,10 +342,10 @@ void _mbus_phy_tx_update(MbusPhyTxRxStruct *pMbusPhyTx,
 
 bool mbus_phy_tx_is_full(MbusPhyStruct *pMbusPhy)
 {
-  return circular_buffer_is_full(&(pMbusPhy->tx.byteFifo));
+  return fifo_is_full(&(pMbusPhy->tx.byteFifo));
 }
 
 void mbus_phy_tx_push(MbusPhyStruct *pMbusPhy, uint8_t nibble)
 {
-  circular_buffer_push(&(pMbusPhy->tx.byteFifo), &nibble);
+  fifo_push(&(pMbusPhy->tx.byteFifo), &nibble);
 }

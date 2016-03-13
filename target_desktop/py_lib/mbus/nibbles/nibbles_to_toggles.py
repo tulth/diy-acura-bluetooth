@@ -24,7 +24,7 @@ def main(argv):
             log.info("Reading from stdin")
         else:
             log.info("Reading from {}".format(cfg.SOURCE))
-        nibbleList = MbusRawNibbleListStructList()
+        nibbleList = MbusRawNibbleListList()
         nibbleList.fromFileName(cfg.SOURCE)
         if cfg.DESTINATION is None:
             log.info("Writing to stdout")

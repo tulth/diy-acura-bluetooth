@@ -470,16 +470,16 @@ void mbus_link_init(MbusLinkStruct *pMbusLink,
                     size_t rxMsgMemInSize,
                     MbusTxMsgStruct *txMsgMemIn,
                     size_t txMsgMemInSize,
-                    circular_buffer *phyTxNibbleFifo)
+                    fifo *phyTxNibbleFifo)
 {
-  circular_buffer_nomalloc_init(&(pMbusLink->rxMsgFifo),
-                                rxMsgMemIn,
-                                rxMsgMemInSize,
-                                sizeof(MbusRxMsgStruct));
-  circular_buffer_nomalloc_init(&(pMbusLink->txMsgFifo),
-                                txMsgMemIn,
-                                txMsgMemInSize,
-                                sizeof(MbusTxMsgStruct));
+  fifo_nomalloc_init(&(pMbusLink->rxMsgFifo),
+                     rxMsgMemIn,
+                     rxMsgMemInSize,
+                     sizeof(MbusRxMsgStruct));
+  fifo_nomalloc_init(&(pMbusLink->txMsgFifo),
+                     txMsgMemIn,
+                     txMsgMemInSize,
+                     sizeof(MbusTxMsgStruct));
   pMbusLink->rxNotTxMode = true;
   pMbusLink->phyTxNibbleFifo = phyTxNibbleFifo;  
 }
@@ -518,7 +518,7 @@ void _sendPendingTxMsg(MbusLinkStruct *pMbusLink)
 
   for (mask = 0xf << txMsg.nibbles.numNibbles; mask != 0x0; mask = mask >> 4) {
     nibble = mask & txMsg.nibbles.packNibbles;
-    circular_buffer_push(pMbusLink->phyTxNibbleFifo, &nibble);
+    fifo_push(pMbusLink->phyTxNibbleFifo, &nibble);
   }
 }
 
@@ -539,17 +539,17 @@ void mbus_link_rx_push_nibble(MbusLinkStruct *pMbusLink,
 
 bool mbus_link_rx_is_empty(MbusLinkStruct *pMbusLink)
 {
-  return circular_buffer_is_empty(&(pMbusLink->rxMsgFifo));
+  return fifo_is_empty(&(pMbusLink->rxMsgFifo));
 }
 
 bool mbus_link_tx_is_empty(MbusLinkStruct *pMbusLink)
 {
-  return circular_buffer_is_empty(&(pMbusLink->txMsgFifo));
+  return fifo_is_empty(&(pMbusLink->txMsgFifo));
 }
 
 void mbus_link_rx_pop(MbusLinkStruct *pMbusLink, MbusRxMsgStruct *pMbusMsgOut)
 {
-  circular_buffer_pop(&(pMbusLink->rxMsgFifo), pMbusMsgOut);
+  fifo_pop(&(pMbusLink->rxMsgFifo), pMbusMsgOut);
 }
 
 // internal use only!
@@ -562,8 +562,8 @@ void _mbus_link_rx_msg_push(MbusLinkStruct *pMbusLink)
                      &rxMbusMsg);
   // printf("pMbusLink->rxMsgFifo.count %d\n", pMbusLink->rxMsgFifo.count);  // COMMENT ME OUT
   // printf("pMbusLink->rxMsgFifo.capacity %d\n", pMbusLink->rxMsgFifo.capacity);  // COMMENT ME OUT
-  if (!circular_buffer_is_full(&(pMbusLink->rxMsgFifo))) {
-    circular_buffer_push(&(pMbusLink->rxMsgFifo), &rxMbusMsg);
+  if (!fifo_is_full(&(pMbusLink->rxMsgFifo))) {
+    fifo_push(&(pMbusLink->rxMsgFifo), &rxMbusMsg);
   } else {
     // printf("circ buf full, dropping!\n");  // COMMENT ME OUT
   }
@@ -572,18 +572,18 @@ void _mbus_link_rx_msg_push(MbusLinkStruct *pMbusLink)
 
 bool mbus_link_tx_is_full(MbusLinkStruct *pMbusLink)
 {
-  return circular_buffer_is_full(&(pMbusLink->txMsgFifo));
+  return fifo_is_full(&(pMbusLink->txMsgFifo));
 }
 
 // check that it is NOT empty first before calling!
 void _mbus_link_tx_pop(MbusLinkStruct *pMbusLink,
                        MbusTxMsgStruct *pMbusMsgOut)
 {
-  circular_buffer_pop(&(pMbusLink->txMsgFifo), pMbusMsgOut);
+  fifo_pop(&(pMbusLink->txMsgFifo), pMbusMsgOut);
 }
 
 void mbus_link_tx_push(MbusLinkStruct *pMbusLink,
                        MbusTxMsgStruct *pMbusMsgIn)
 {
-  circular_buffer_push(&(pMbusLink->txMsgFifo), pMbusMsgIn);
+  fifo_push(&(pMbusLink->txMsgFifo), pMbusMsgIn);
 }

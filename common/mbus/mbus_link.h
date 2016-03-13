@@ -1,9 +1,9 @@
-#ifndef FILE_MBUS_PROTOCOL_SEEN
-#define FILE_MBUS_PROTOCOL_SEEN
+#ifndef FILE_MBUS_LINK_SEEN
+#define FILE_MBUS_LINK_SEEN
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "circular_buffer.h"
+#include "fifo.h"
 
 // ERROR IDS
 static const uint8_t ERR_ID_SIGNAL = 0x1;
@@ -124,11 +124,11 @@ typedef struct {
 } MbusRxMsgStruct;
 
 typedef struct {
-  circular_buffer rxMsgFifo;
-  circular_buffer txMsgFifo;
+  fifo rxMsgFifo;
+  fifo txMsgFifo;
   MbusRawNibbleListStruct nibbles;
   bool rxNotTxMode;
-  circular_buffer *phyTxNibbleFifo;
+  fifo *phyTxNibbleFifo;
 } MbusLinkStruct;
 
 #ifdef __cplusplus
@@ -139,7 +139,7 @@ extern "C" {
                              size_t rxMsgMemInSize,
                              MbusTxMsgStruct *txMsgMemIn,
                              size_t txMsgMemInSize,
-                             circular_buffer *phyTxNibbleFifo);
+                             fifo *phyTxNibbleFifo);
   extern void mbus_link_update(MbusLinkStruct *pMbusLink,
                                const bool mbusPhyRxBusy,
                                const bool mbusPhyTxBusy,
@@ -161,4 +161,4 @@ extern "C" {
 }
 #endif // __cplusplus
 
-#endif // FILE_MBUS_PROTOCOL_SEEN
+#endif // FILE_MBUS_LINK_SEEN

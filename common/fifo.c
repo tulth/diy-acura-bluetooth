@@ -1,7 +1,7 @@
-#include "circular_buffer.h"
+#include "fifo.h"
 #include <assert.h>
 
-void circular_buffer_malloc_init(circular_buffer *cb, size_t capacity, size_t elementSize)
+void fifo_malloc_init(fifo *cb, size_t capacity, size_t elementSize)
 {
     cb->buffer = malloc(capacity * elementSize);
     assert(cb->buffer != NULL);
@@ -13,12 +13,12 @@ void circular_buffer_malloc_init(circular_buffer *cb, size_t capacity, size_t el
     cb->tail = cb->buffer;
 }
 
-void circular_buffer_malloc_free(circular_buffer *cb)
+void fifo_malloc_free(fifo *cb)
 {
     free(cb->buffer);
 }
 
-void circular_buffer_nomalloc_init(circular_buffer *cb, void *buf, size_t bufSize, size_t elementSize)
+void fifo_nomalloc_init(fifo *cb, void *buf, size_t bufSize, size_t elementSize)
 {
     cb->buffer = buf;
     assert(cb->buffer != NULL);
@@ -30,7 +30,7 @@ void circular_buffer_nomalloc_init(circular_buffer *cb, void *buf, size_t bufSiz
     cb->tail = cb->buffer;
 }
 
-void circular_buffer_reset(circular_buffer *cb)
+void fifo_reset(fifo *cb)
 {
     cb->count = 0;
     cb->head = cb->buffer;
@@ -38,7 +38,7 @@ void circular_buffer_reset(circular_buffer *cb)
 }
 
 
-void circular_buffer_push(circular_buffer *cb, const void *item)
+void fifo_push(fifo *cb, const void *item)
 {
   assert(cb->count < cb->capacity);
   memcpy(cb->head, item, cb->elementSize);
@@ -49,7 +49,7 @@ void circular_buffer_push(circular_buffer *cb, const void *item)
   cb->count++;
 }
 
-void circular_buffer_pop(circular_buffer *cb, void *item)
+void fifo_pop(fifo *cb, void *item)
 {
   assert(cb->count > 0);
   memcpy(item, cb->tail, cb->elementSize);
@@ -60,12 +60,12 @@ void circular_buffer_pop(circular_buffer *cb, void *item)
   cb->count--;
 }
 
-bool circular_buffer_is_full(circular_buffer *cb)
+bool fifo_is_full(fifo *cb)
 {
   return cb->count == cb->capacity;
 }
 
-bool circular_buffer_is_empty(circular_buffer *cb)
+bool fifo_is_empty(fifo *cb)
 {
   return cb->count == 0;
 }

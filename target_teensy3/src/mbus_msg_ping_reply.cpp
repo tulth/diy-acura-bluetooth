@@ -6,7 +6,7 @@
 #include <core_pins.h>
 #include "mbus_phy.h"
 #include "mbus_link.h"
-#include "circular_buffer.h"
+#include "fifo.h"
 
 #define BYTE_MEM_SIZE 64
 #define MSG_MEM_SIZE 2

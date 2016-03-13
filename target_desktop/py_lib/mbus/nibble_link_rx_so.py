@@ -45,22 +45,22 @@ def sendToLinkRx(nibbleListList):
     mbusLink = MbusLinkStruct()
     msgMemSize = 2
     rxMsgMem = (MbusRxMsgStruct * msgMemSize)()
-    txMsgMem = (MbusRxMsgStruct * msgMemSize)()
+    txMsgMem = (MbusTxMsgStruct * msgMemSize)()
     libMbus.mbus_link_init(ctypes.byref(mbusLink),
                            ctypes.byref(rxMsgMem),
                            ctypes.sizeof(rxMsgMem),
                            ctypes.byref(txMsgMem),
                            ctypes.sizeof(txMsgMem),
+                           None  # phy tx byte fifo unused
                            )
-    # mbusMsg = MbusRxMsgStruct()
     resultStrList = []
     for nibbleList in nibbleListList:
         nibbleSeq = tuple([nibbleList.nibbles[num] for num in range(nibbleList.numNibbles)])
         for nibble in nibbleSeq:
-            libMbus.mbus_link_rx_update(ctypes.byref(mbusLink),
-                                        ctypes.c_uint8(nibble))
-        libMbus.mbus_link_rx_update(ctypes.byref(mbusLink),
-                                    ctypes.c_uint8(nibbles.MBUS_END_MSG_CODE))
+            libMbus.mbus_link_rx_push_nibble(ctypes.byref(mbusLink),
+                                             ctypes.c_uint8(nibble))
+        libMbus.mbus_link_rx_push_nibble(ctypes.byref(mbusLink),
+                                         ctypes.c_uint8(nibbles.MBUS_END_MSG_CODE))
         while not libMbus.mbus_link_rx_is_empty(ctypes.byref(mbusLink)):
             mbusMsg = MbusRxMsgStruct()
             libMbus.mbus_link_rx_pop(ctypes.byref(mbusLink),

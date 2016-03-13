@@ -16,7 +16,7 @@ INTERBIT_TIMEOUT_TIME = (BIT_TIME)
 def nibbleSeq2Str(nibbleSeq):
     return "0x" + "".join(["{:x}".format(nibble) for nibble in nibbleSeq])
 
-class circular_buffer(ctypes.Structure):
+class fifo(ctypes.Structure):
     _fields_ = [
         ("buffer", ctypes.c_void_p),
         ("bufferEnd", ctypes.c_void_p),
@@ -28,7 +28,7 @@ class circular_buffer(ctypes.Structure):
         ]
 
     def __str__(self):
-        return "circular_buffer: count {}".format(self.count)
+        return "fifo: count {}".format(self.count)
 
 
 class MbusPhyTxRxStruct(ctypes.Structure):
@@ -36,7 +36,7 @@ class MbusPhyTxRxStruct(ctypes.Structure):
         ("state", ctypes.c_uint8),
         ("bitShifter", ctypes.c_uint8),
         ("microSecTimeStamp", ctypes.c_ulong),
-        ("byteFifo", circular_buffer),
+        ("byteFifo", fifo),
         ]
 
     def __str__(self):
@@ -56,9 +56,11 @@ class MbusPhyStruct(ctypes.Structure):
 
 class MbusLinkStruct(ctypes.Structure):
     _fields_ = [
-        ("rxMsgFifo", circular_buffer),
-        ("txMsgFifo", circular_buffer),
+        ("rxMsgFifo", fifo),
+        ("txMsgFifo", fifo),
         ("nibbles", nibbles.MbusRawNibbleListStruct),
+        ("rxNotTxMode", ctypes.c_bool),
+        ("phyTxNibbleFifo", ctypes.POINTER(fifo)),
         ]
 
     def __str__(self):
@@ -258,6 +260,15 @@ class MbusMsgParsedStruct(ctypes.Structure):
         else:
             msgTypeStr = "STRIFY ERR"
         return "{} {:15} {}".format(dirStr, msgTypeStr, bodyStr)
+
+
+class MbusTxMsgStruct(ctypes.Structure):
+    _fields_ = [
+        ("nibbles", nibbles.MbusRawNibbleListStruct),
+        ]
+
+    def __str__(self):
+        return str(self.nibbles)
 
 
 class MbusRxMsgStruct(ctypes.Structure):

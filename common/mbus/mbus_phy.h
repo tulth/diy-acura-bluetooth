@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "circular_buffer.h"
+#include "fifo.h"
 
 #define MBUS_LOW_TOO_LONG_CODE 16 
 #define MBUS_TIMEOUT_CODE 17
@@ -13,7 +13,7 @@ typedef struct {
   uint8_t state;
   uint8_t bitShifter;
   unsigned long microSecTimeStamp;
-  circular_buffer byteFifo;
+  fifo byteFifo;
 } MbusPhyTxRxStruct;
 
 typedef struct {
