@@ -45,7 +45,7 @@ void mbus_phy_rx_enable(MbusPhyStruct *pMbusPhy)
 void mbus_phy_rx_disable(MbusPhyStruct *pMbusPhy)
 { pMbusPhy->rx.state = MBUS_STATE_RX_DISABLED; }
 bool mbus_phy_rx_is_busy(MbusPhyStruct *pMbusPhy)
-{ return (pMbusPhy->rx.state != MBUS_STATE_RX_DISABLED) || (pMbusPhy->rx.state != MBUS_STATE_RX_IDLE); }  
+{ return (pMbusPhy->rx.state != MBUS_STATE_RX_DISABLED) && (pMbusPhy->rx.state != MBUS_STATE_RX_IDLE); }  
 bool mbus_phy_rx_is_enabled(MbusPhyStruct *pMbusPhy)
 { return (pMbusPhy->rx.state != MBUS_STATE_RX_DISABLED); }  
 
