@@ -2,23 +2,23 @@
 #include "stdio.h"
 #include "mbus_phy.h"
 
-void lengthCheck(MbusMsgStruct *pMbusMsgOut, bool lengthOk);
-void doCheckSum(MbusMsgStruct *pMbusMsgOut);
-void doDirection(MbusMsgStruct *pMbusMsgOut);
-void parseHead2CdBody(MbusMsgStruct *);
-void parseCd2HeadBody(MbusMsgStruct *);
-void parseSetPlayState(MbusMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq);
-void parseSetDiskTrack(MbusMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq);
-void parseSetMode(MbusMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq);
-void parseChanging(MbusMsgStruct *pMbusMsgOut, uint8_t* nibbleSeq);
-void parsePlayState(MbusMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq);
-void parseDiskInfo(MbusMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq);
+void lengthCheck(MbusRxMsgStruct *pMbusMsgOut, bool lengthOk);
+void doCheckSum(MbusRxMsgStruct *pMbusMsgOut);
+void doDirection(MbusRxMsgStruct *pMbusMsgOut);
+void parseHead2CdBody(MbusRxMsgStruct *);
+void parseCd2HeadBody(MbusRxMsgStruct *);
+void parseSetPlayState(MbusRxMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq);
+void parseSetDiskTrack(MbusRxMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq);
+void parseSetMode(MbusRxMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq);
+void parseChanging(MbusRxMsgStruct *pMbusMsgOut, uint8_t* nibbleSeq);
+void parsePlayState(MbusRxMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq);
+void parseDiskInfo(MbusRxMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq);
 void _mbus_link_rx_msg_push(MbusLinkStruct *pMbusLink);
 void _mbus_link_tx_pop(MbusLinkStruct *pMbusLink,
-                       MbusMsgStruct *pMbusMsgOut);
+                       MbusRxMsgStruct *pMbusMsgOut);
 
 
-void mbus_link_parseMsg(uint8_t* nibbleSequence, unsigned int numNibbles, MbusMsgStruct *pMbusMsgOut)
+void mbus_link_parseMsg(uint8_t* nibbleSequence, unsigned int numNibbles, MbusRxMsgStruct *pMbusMsgOut)
 {
   int index;
   pMbusMsgOut->errId = 0;
@@ -27,22 +27,22 @@ void mbus_link_parseMsg(uint8_t* nibbleSequence, unsigned int numNibbles, MbusMs
    * copy in raw nibbles, up to the array size, also do size and invalid signal checking
    ****/
   if (numNibbles > NIBBLE_ARRAY_SIZE) {
-    pMbusMsgOut->rawNibbles.nibbleArrayLength = NIBBLE_ARRAY_SIZE;
+    pMbusMsgOut->rawNibbles.numNibbles = NIBBLE_ARRAY_SIZE;
     pMbusMsgOut->errId = ERR_ID_LENGTH;
   }
   else {
-    pMbusMsgOut->rawNibbles.nibbleArrayLength = numNibbles;
+    pMbusMsgOut->rawNibbles.numNibbles = numNibbles;
   }
-  // printf("pMbusMsgOut->rawNibbles.nibbleArrayLength %d\n", pMbusMsgOut->rawNibbles.nibbleArrayLength);  // COMMENT ME OUT
-  for (index=0; index < pMbusMsgOut->rawNibbles.nibbleArrayLength; index++) {
-    pMbusMsgOut->rawNibbles.nibbleArray[index] = nibbleSequence[index];
+  // printf("pMbusMsgOut->rawNibbles.numNibbles %d\n", pMbusMsgOut->rawNibbles.numNibbles);  // COMMENT ME OUT
+  for (index=0; index < pMbusMsgOut->rawNibbles.numNibbles; index++) {
+    pMbusMsgOut->rawNibbles.nibbles[index] = nibbleSequence[index];
     if ((nibbleSequence[index] == 'T') ||
         (nibbleSequence[index] == 'L') ||
         (nibbleSequence[index] == 'X')) {
       pMbusMsgOut->errId = ERR_ID_SIGNAL;
     }
   }
-  lengthCheck(pMbusMsgOut, pMbusMsgOut->rawNibbles.nibbleArrayLength > 2);
+  lengthCheck(pMbusMsgOut, pMbusMsgOut->rawNibbles.numNibbles > 2);
   if (pMbusMsgOut->errId != 0) {
     return;
   }
@@ -67,22 +67,22 @@ void mbus_link_parseMsg(uint8_t* nibbleSequence, unsigned int numNibbles, MbusMs
   // printf("leaving mbus_link_parseMsg\n");  // COMMENT ME OUT
 }
 
-void lengthCheck(MbusMsgStruct *pMbusMsgOut, bool lengthOk)
+void lengthCheck(MbusRxMsgStruct *pMbusMsgOut, bool lengthOk)
 {
   if (!lengthOk) {
     pMbusMsgOut->errId = ERR_ID_LENGTH;
   }
 }
 
-void doCheckSum(MbusMsgStruct *pMbusMsgOut)
+void doCheckSum(MbusRxMsgStruct *pMbusMsgOut)
 {
   int index;
   uint8_t expectedCheckSum = 0;
-  uint8_t actualCheckSum = pMbusMsgOut->rawNibbles.nibbleArray[pMbusMsgOut->rawNibbles.nibbleArrayLength-1];
+  uint8_t actualCheckSum = pMbusMsgOut->rawNibbles.nibbles[pMbusMsgOut->rawNibbles.numNibbles-1];
 
   expectedCheckSum = 0;
-  for (index=0; index < (pMbusMsgOut->rawNibbles.nibbleArrayLength - 1); index++) {
-    expectedCheckSum ^= pMbusMsgOut->rawNibbles.nibbleArray[index];
+  for (index=0; index < (pMbusMsgOut->rawNibbles.numNibbles - 1); index++) {
+    expectedCheckSum ^= pMbusMsgOut->rawNibbles.nibbles[index];
   }
   expectedCheckSum = (expectedCheckSum + 1) % 16;
   if (actualCheckSum != expectedCheckSum) {
@@ -90,9 +90,9 @@ void doCheckSum(MbusMsgStruct *pMbusMsgOut)
   }
 }
 
-void doDirection(MbusMsgStruct *pMbusMsgOut)
+void doDirection(MbusRxMsgStruct *pMbusMsgOut)
 {
-  uint8_t dirNibble = pMbusMsgOut->rawNibbles.nibbleArray[0];
+  uint8_t dirNibble = pMbusMsgOut->rawNibbles.nibbles[0];
   if (dirNibble == 1) {
     pMbusMsgOut->parsed.directionH2C = true;
   }
@@ -104,41 +104,41 @@ void doDirection(MbusMsgStruct *pMbusMsgOut)
   }
 }
 
-void parseHead2CdBody(MbusMsgStruct *pMbusMsgOut)
+void parseHead2CdBody(MbusRxMsgStruct *pMbusMsgOut)
 {
-  uint8_t cmd0 = pMbusMsgOut->rawNibbles.nibbleArray[1];
-  uint8_t cmd1 = pMbusMsgOut->rawNibbles.nibbleArray[2];
+  uint8_t cmd0 = pMbusMsgOut->rawNibbles.nibbles[1];
+  uint8_t cmd1 = pMbusMsgOut->rawNibbles.nibbles[2];
   // printf("cmd0 %d\n", cmd0);  // COMMENT ME OUT
   if (cmd0 == 0x8) {
-    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.nibbleArrayLength == 3));
+    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.numNibbles == 3));
     if (pMbusMsgOut->errId == 0) {
       pMbusMsgOut->parsed.msgType = MSGTYPE_ping;
     }
   }
   else if ((cmd0 == 0x1) && (cmd1 == 0x1)) {
-    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.nibbleArrayLength == 6));
+    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.numNibbles == 6));
     if (pMbusMsgOut->errId == 0) {
       pMbusMsgOut->parsed.msgType = MSGTYPE_setPlayState;
-      parseSetPlayState(pMbusMsgOut, pMbusMsgOut->rawNibbles.nibbleArray + 3);
+      parseSetPlayState(pMbusMsgOut, pMbusMsgOut->rawNibbles.nibbles + 3);
     }
   }
   else if ((cmd0 == 0x1) && (cmd1 == 0x3)) {
-    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.nibbleArrayLength == 9));
+    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.numNibbles == 9));
     if (pMbusMsgOut->errId == 0) {
       pMbusMsgOut->parsed.msgType = MSGTYPE_setDiskTrack;
-      parseSetDiskTrack(pMbusMsgOut, pMbusMsgOut->rawNibbles.nibbleArray + 3);
+      parseSetDiskTrack(pMbusMsgOut, pMbusMsgOut->rawNibbles.nibbles + 3);
     }
   }
   else if ((cmd0 == 0x1) && (cmd1 == 0x4)) {
-    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.nibbleArrayLength == 9));
+    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.numNibbles == 9));
     if (pMbusMsgOut->errId == 0) {
       pMbusMsgOut->parsed.msgType = MSGTYPE_setMode;
-      parseSetMode(pMbusMsgOut, pMbusMsgOut->rawNibbles.nibbleArray + 3);
+      parseSetMode(pMbusMsgOut, pMbusMsgOut->rawNibbles.nibbles + 3);
     }
   }
   else if (cmd0 == 0x9) {
-    // printf("pMbusMsgOut->rawNibbles.nibbleArrayLength %d\n", pMbusMsgOut->rawNibbles.nibbleArrayLength);
-    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.nibbleArrayLength == 3));
+    // printf("pMbusMsgOut->rawNibbles.numNibbles %d\n", pMbusMsgOut->rawNibbles.numNibbles);
+    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.numNibbles == 3));
     if (pMbusMsgOut->errId == 0) {
       pMbusMsgOut->parsed.msgType = MSGTYPE_headPowerOn;
     }
@@ -148,51 +148,51 @@ void parseHead2CdBody(MbusMsgStruct *pMbusMsgOut)
   }
 }
 
-void parseCd2HeadBody(MbusMsgStruct *pMbusMsgOut)
+void parseCd2HeadBody(MbusRxMsgStruct *pMbusMsgOut)
 {
-  uint8_t cmd0 = pMbusMsgOut->rawNibbles.nibbleArray[1];
-  //  uint8_t cmd1 = pMbusMsgOut->rawNibbles.nibbleArray[2];
+  uint8_t cmd0 = pMbusMsgOut->rawNibbles.nibbles[1];
+  //  uint8_t cmd1 = pMbusMsgOut->rawNibbles.nibbles[2];
   if (cmd0 == 0x8) {
-    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.nibbleArrayLength == 3));
+    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.numNibbles == 3));
     if (pMbusMsgOut->errId == 0) {
       pMbusMsgOut->parsed.msgType = MSGTYPE_pong;
     }
   }
   else if (cmd0 == 0x9) {
-    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.nibbleArrayLength == 16));
+    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.numNibbles == 16));
     if (pMbusMsgOut->errId == 0) {
       pMbusMsgOut->parsed.msgType = MSGTYPE_playState;
-      parsePlayState(pMbusMsgOut, pMbusMsgOut->rawNibbles.nibbleArray + 2);
+      parsePlayState(pMbusMsgOut, pMbusMsgOut->rawNibbles.nibbles + 2);
     }
   }
   else if (cmd0 == 0xA) {
-    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.nibbleArrayLength == 13));
+    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.numNibbles == 13));
     if (pMbusMsgOut->errId == 0) {
       pMbusMsgOut->parsed.msgType = MSGTYPE_cdPowerOn;
     }
   }
   else if (cmd0 == 0xB) {
-    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.nibbleArrayLength == 12));
+    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.numNibbles == 12));
     if (pMbusMsgOut->errId == 0) {
       pMbusMsgOut->parsed.msgType = MSGTYPE_changing;
-      parseChanging(pMbusMsgOut, pMbusMsgOut->rawNibbles.nibbleArray + 2);
+      parseChanging(pMbusMsgOut, pMbusMsgOut->rawNibbles.nibbles + 2);
     }
   }
   else if (cmd0 == 0xC) {
-    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.nibbleArrayLength == 13));
+    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.numNibbles == 13));
     if (pMbusMsgOut->errId == 0) {
       pMbusMsgOut->parsed.msgType = MSGTYPE_diskInfo;
-      parseDiskInfo(pMbusMsgOut, pMbusMsgOut->rawNibbles.nibbleArray + 2);
+      parseDiskInfo(pMbusMsgOut, pMbusMsgOut->rawNibbles.nibbles + 2);
     }
   }
   else if (cmd0 == 0xD) {
-    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.nibbleArrayLength == 11));
+    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.numNibbles == 11));
     if (pMbusMsgOut->errId == 0) {
       pMbusMsgOut->parsed.msgType = MSGTYPE_unknownStatus;
     }
   }
   else if (cmd0 == 0xF) {
-    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.nibbleArrayLength == 8));
+    lengthCheck(pMbusMsgOut, (pMbusMsgOut->rawNibbles.numNibbles == 8));
     if (pMbusMsgOut->errId == 0) {
       pMbusMsgOut->parsed.msgType = MSGTYPE_ackWait;
     }
@@ -207,7 +207,7 @@ static inline uint8_t nibblePairToBcd(uint8_t nibHi, uint8_t nibLo)
   return nibHi*10 + nibLo;
 }
 
-void parseSetPlayState(MbusMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq)
+void parseSetPlayState(MbusRxMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq)
 {
   pMbusMsgOut->parsed.body.setPlayState.resume = (nibbleSeq[0] & (1 << 3)) != 0;
   pMbusMsgOut->parsed.body.setPlayState.stop = (nibbleSeq[0] & (1 << 2)) != 0;
@@ -218,7 +218,7 @@ void parseSetPlayState(MbusMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq)
   pMbusMsgOut->parsed.body.setPlayState.play = (nibbleSeq[1] & (1 << 0)) != 0;
 }
 
-void parseSetDiskTrack(MbusMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq)
+void parseSetDiskTrack(MbusRxMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq)
 {
   pMbusMsgOut->parsed.body.setDiskTrack.disk = nibbleSeq[0];
   pMbusMsgOut->parsed.body.setDiskTrack.track = nibblePairToBcd(nibbleSeq[1], nibbleSeq[2]);
@@ -227,7 +227,7 @@ void parseSetDiskTrack(MbusMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq)
   pMbusMsgOut->parsed.body.setDiskTrack.random = (nibbleSeq[4] & (1 << 2)) != 0;
 }
 
-void parseSetMode(MbusMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq)
+void parseSetMode(MbusRxMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq)
 {
   pMbusMsgOut->parsed.body.setMode.repeatOne = (nibbleSeq[0] & (1 << 2)) != 0;
   pMbusMsgOut->parsed.body.setMode.repeatAll = (nibbleSeq[0] & (1 << 3)) != 0;
@@ -235,7 +235,7 @@ void parseSetMode(MbusMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq)
   pMbusMsgOut->parsed.body.setMode.introScan = (nibbleSeq[1] & (1 << 4)) != 0;
 }
 
-void parseChanging(MbusMsgStruct *pMbusMsgOut, uint8_t* nibbleSeq)
+void parseChanging(MbusRxMsgStruct *pMbusMsgOut, uint8_t* nibbleSeq)
 {
   pMbusMsgOut->parsed.body.changing.disk = nibbleSeq[1];
   pMbusMsgOut->parsed.body.changing.track = nibblePairToBcd(nibbleSeq[2], nibbleSeq[3]);
@@ -249,7 +249,7 @@ void parseChanging(MbusMsgStruct *pMbusMsgOut, uint8_t* nibbleSeq)
 }
 
 
-void parsePlayState(MbusMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq)
+void parsePlayState(MbusRxMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq)
 {
   pMbusMsgOut->parsed.body.playState.track = nibblePairToBcd(nibbleSeq[1], nibbleSeq[2]);
   pMbusMsgOut->parsed.body.playState.index = nibblePairToBcd(nibbleSeq[3], nibbleSeq[4]);
@@ -264,7 +264,7 @@ void parsePlayState(MbusMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq)
   pMbusMsgOut->parsed.body.playState.play = (nibbleSeq[12] & (1 << 0)) != 0;
 }
 
-void parseDiskInfo(MbusMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq)
+void parseDiskInfo(MbusRxMsgStruct *pMbusMsgOut, uint8_t *nibbleSeq)
 {
   pMbusMsgOut->parsed.body.diskInfo.disk = nibbleSeq[0];
   pMbusMsgOut->parsed.body.diskInfo.tracks = nibblePairToBcd(nibbleSeq[3], nibbleSeq[4]);
@@ -419,7 +419,7 @@ int msgParsedToStr(MbusMsgParsedStruct *parsedStructIn,
   return strOutMaxSize - workingMaxSize;
 }
 
-int mbus_link_msgToStr(MbusMsgStruct *pMbusMsgIn,
+int mbus_link_msgToStr(MbusRxMsgStruct *pMbusMsgIn,
                        char *strOut,
                        unsigned int strOutMaxSize
                        )
@@ -431,8 +431,8 @@ int mbus_link_msgToStr(MbusMsgStruct *pMbusMsgIn,
   workingMaxSize--;
   
   for(idx = 0; (idx < 18); idx++) {
-    if (idx < pMbusMsgIn->rawNibbles.nibbleArrayLength) {
-      _addChar(mbus_phy_rxnibble2ascii(pMbusMsgIn->rawNibbles.nibbleArray[idx]), &workingStr, &workingMaxSize);
+    if (idx < pMbusMsgIn->rawNibbles.numNibbles) {
+      _addChar(mbus_phy_rxnibble2ascii(pMbusMsgIn->rawNibbles.nibbles[idx]), &workingStr, &workingMaxSize);
     }
     else {
       _addChar(' ', &workingStr, &workingMaxSize);
@@ -464,33 +464,33 @@ int mbus_link_msgToStr(MbusMsgStruct *pMbusMsgIn,
 
 
 void mbus_link_init(MbusLinkStruct *pMbusLink,
-                    MbusMsgStruct *rxMsgMemIn,
+                    MbusRxMsgStruct *rxMsgMemIn,
                     size_t rxMsgMemInSize,
-                    MbusMsgStruct *txMsgMemIn,
+                    MbusRxMsgStruct *txMsgMemIn,
                     size_t txMsgMemInSize
                     )
 {
   circular_buffer_nomalloc_init(&(pMbusLink->rxMsgFifo),
                                 rxMsgMemIn,
                                 rxMsgMemInSize,
-                                sizeof(MbusMsgStruct));
+                                sizeof(MbusRxMsgStruct));
   circular_buffer_nomalloc_init(&(pMbusLink->txMsgFifo),
                                 txMsgMemIn,
                                 txMsgMemInSize,
-                                sizeof(MbusMsgStruct));
+                                sizeof(MbusRxMsgStruct));
 }
 
 void mbus_link_rx_update(MbusLinkStruct *pMbusLink,
                          const uint8_t rxNibbleIn) 
 {
   // printf("entering mbus_link_rx_update\n");  // COMMENT ME OUT
-  pMbusLink->nibbles.nibbleArray[pMbusLink->nibbles.nibbleArrayLength] = rxNibbleIn;
-  if (pMbusLink->nibbles.nibbleArrayLength < NIBBLE_ARRAY_SIZE) {
-    pMbusLink->nibbles.nibbleArrayLength++;
+  pMbusLink->nibbles.nibbles[pMbusLink->nibbles.numNibbles] = rxNibbleIn;
+  if (pMbusLink->nibbles.numNibbles < NIBBLE_ARRAY_SIZE) {
+    pMbusLink->nibbles.numNibbles++;
   }
   if (rxNibbleIn == MBUS_END_MSG_CODE) {
     _mbus_link_rx_msg_push(pMbusLink);
-    pMbusLink->nibbles.nibbleArrayLength = 0;
+    pMbusLink->nibbles.numNibbles = 0;
   }
   // printf("leaving mbus_link_rx_update\n");  // COMMENT ME OUT
 }
@@ -500,7 +500,7 @@ bool mbus_link_rx_is_empty(MbusLinkStruct *pMbusLink)
   return circular_buffer_is_empty(&(pMbusLink->rxMsgFifo));
 }
 
-void mbus_link_rx_pop(MbusLinkStruct *pMbusLink, MbusMsgStruct *pMbusMsgOut)
+void mbus_link_rx_pop(MbusLinkStruct *pMbusLink, MbusRxMsgStruct *pMbusMsgOut)
 {
   circular_buffer_pop(&(pMbusLink->rxMsgFifo), pMbusMsgOut);
 }
@@ -508,10 +508,10 @@ void mbus_link_rx_pop(MbusLinkStruct *pMbusLink, MbusMsgStruct *pMbusMsgOut)
 // internal use only!
 void _mbus_link_rx_msg_push(MbusLinkStruct *pMbusLink)
 {
-  MbusMsgStruct rxMbusMsg;
-  // printf("MSG! pMbusLink->nibbles.nibbleArrayLength: %d\n", pMbusLink->nibbles.nibbleArrayLength);  // COMMENT ME OUT
-  mbus_link_parseMsg(pMbusLink->nibbles.nibbleArray,
-                     pMbusLink->nibbles.nibbleArrayLength-1,
+  MbusRxMsgStruct rxMbusMsg;
+  // printf("MSG! pMbusLink->nibbles.numNibbles: %d\n", pMbusLink->nibbles.numNibbles);  // COMMENT ME OUT
+  mbus_link_parseMsg(pMbusLink->nibbles.nibbles,
+                     pMbusLink->nibbles.numNibbles-1,
                      &rxMbusMsg);
   // printf("pMbusLink->rxMsgFifo.count %d\n", pMbusLink->rxMsgFifo.count);  // COMMENT ME OUT
   // printf("pMbusLink->rxMsgFifo.capacity %d\n", pMbusLink->rxMsgFifo.capacity);  // COMMENT ME OUT
@@ -530,13 +530,13 @@ bool mbus_link_tx_is_full(MbusLinkStruct *pMbusLink)
 
 // check that it is NOT empty first before calling!
 void _mbus_link_tx_pop(MbusLinkStruct *pMbusLink,
-                       MbusMsgStruct *pMbusMsgOut)
+                       MbusRxMsgStruct *pMbusMsgOut)
 {
   circular_buffer_pop(&(pMbusLink->txMsgFifo), pMbusMsgOut);
 }
 
 void mbus_link_tx_push(MbusLinkStruct *pMbusLink,
-                       MbusMsgStruct *pMbusMsgIn)
+                       MbusRxMsgStruct *pMbusMsgIn)
 {
   circular_buffer_push(&(pMbusLink->txMsgFifo), pMbusMsgIn);
 }

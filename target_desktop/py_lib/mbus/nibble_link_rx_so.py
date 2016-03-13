@@ -44,15 +44,15 @@ def sendToLinkRx(nibbleListList):
     libMbus = ctypes.cdll.LoadLibrary(libSoName)
     mbusLink = MbusLinkStruct()
     msgMemSize = 2
-    rxMsgMem = (MbusMsgStruct * msgMemSize)()
-    txMsgMem = (MbusMsgStruct * msgMemSize)()
+    rxMsgMem = (MbusRxMsgStruct * msgMemSize)()
+    txMsgMem = (MbusRxMsgStruct * msgMemSize)()
     libMbus.mbus_link_init(ctypes.byref(mbusLink),
                            ctypes.byref(rxMsgMem),
                            ctypes.sizeof(rxMsgMem),
                            ctypes.byref(txMsgMem),
                            ctypes.sizeof(txMsgMem),
                            )
-    # mbusMsg = MbusMsgStruct()
+    # mbusMsg = MbusRxMsgStruct()
     resultStrList = []
     for nibbleList in nibbleListList:
         nibbleSeq = tuple([nibbleList.nibbles[num] for num in range(nibbleList.numNibbles)])
@@ -62,7 +62,7 @@ def sendToLinkRx(nibbleListList):
         libMbus.mbus_link_rx_update(ctypes.byref(mbusLink),
                                     ctypes.c_uint8(nibbles.MBUS_END_MSG_CODE))
         while not libMbus.mbus_link_rx_is_empty(ctypes.byref(mbusLink)):
-            mbusMsg = MbusMsgStruct()
+            mbusMsg = MbusRxMsgStruct()
             libMbus.mbus_link_rx_pop(ctypes.byref(mbusLink),
                                      ctypes.byref(mbusMsg))
             maxStrChar = 256

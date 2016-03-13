@@ -17,9 +17,9 @@ extern "C" int main(void)
   uint8_t rxByteMem[BYTE_MEM_SIZE];
   uint8_t txByteMem[BYTE_MEM_SIZE];
   uint8_t rxNibble;
-  MbusMsgStruct rxMsgMem[MSG_MEM_SIZE];
-  MbusMsgStruct txMsgMem[MSG_MEM_SIZE];
-  MbusMsgStruct rxMsg;
+  MbusRxMsgStruct rxMsgMem[MSG_MEM_SIZE];
+  MbusRxMsgStruct txMsgMem[MSG_MEM_SIZE];
+  MbusRxMsgStruct rxMsg;
   MbusPhyStruct phy;
   MbusLinkStruct link;
   bool driveMbusPinLo = false;
@@ -41,9 +41,9 @@ extern "C" int main(void)
   mbus_phy_rx_enable(&phy);
   mbus_link_init(&link,
                  rxMsgMem,
-                 MSG_MEM_SIZE * sizeof(MbusMsgStruct),
+                 MSG_MEM_SIZE * sizeof(MbusRxMsgStruct),
                  txMsgMem,
-                 MSG_MEM_SIZE * sizeof(MbusMsgStruct));
+                 MSG_MEM_SIZE * sizeof(MbusRxMsgStruct));
 
   while (1) {
     /* blink */

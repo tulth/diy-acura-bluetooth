@@ -29,8 +29,8 @@ static const uint8_t MSGTYPE_unknownStatus = 0x26;
 #define NIBBLE_ARRAY_SIZE ((unsigned int)32)
 
 typedef struct {
-  uint8_t nibbleArray[NIBBLE_ARRAY_SIZE];
-  uint8_t nibbleArrayLength;
+  uint8_t nibbles[NIBBLE_ARRAY_SIZE];
+  uint8_t numNibbles;
 } MbusRawNibbleListStruct;
 
 typedef struct {
@@ -114,10 +114,14 @@ typedef struct {
 } MbusMsgParsedStruct;
 
 typedef struct {
+  MbusPackedNibblesStruct nibbles; 
+} MbusTxMsgStruct;
+
+typedef struct {
   uint8_t errId; 
   MbusMsgParsedStruct parsed; 
   MbusRawNibbleListStruct rawNibbles; 
-} MbusMsgStruct;
+} MbusRxMsgStruct;
 
 typedef struct {
   circular_buffer rxMsgFifo;
@@ -129,19 +133,19 @@ typedef struct {
 extern "C" {
 #endif // __cplusplus
   extern void mbus_link_init(MbusLinkStruct *pMbusLink,
-                             MbusMsgStruct *rxMsgMemIn,
+                             MbusRxMsgStruct *rxMsgMemIn,
                              size_t rxMsgMemInSize,
-                             MbusMsgStruct *txMsgMemIn,
+                             MbusRxMsgStruct *txMsgMemIn,
                              size_t txMsgMemInSize);
   extern void mbus_link_rx_update(MbusLinkStruct *pMbusLink,
                                    uint8_t rxNibble);
    /* FIXME add tx capability */
   extern bool mbus_link_rx_is_empty(MbusLinkStruct *pMbusLink);
-  extern void mbus_link_rx_pop(MbusLinkStruct *pMbusLink, MbusMsgStruct *pMbusMsgOut);
+  extern void mbus_link_rx_pop(MbusLinkStruct *pMbusLink, MbusRxMsgStruct *pMbusMsgOut);
   extern bool mbus_link_tx_is_full(MbusLinkStruct *pMbusLink);
-  extern void mbus_link_tx_push(MbusLinkStruct *pMbusLink, MbusMsgStruct *pMbusMsgIn);
-  extern void mbus_link_parseMsg(uint8_t* nibbleSequence, unsigned int numNibbles, MbusMsgStruct *pMbusMsgOut);
-  extern int mbus_link_msgToStr(MbusMsgStruct *pMbusMsgIn,
+  extern void mbus_link_tx_push(MbusLinkStruct *pMbusLink, MbusRxMsgStruct *pMbusMsgIn);
+  extern void mbus_link_parseMsg(uint8_t* nibbleSequence, unsigned int numNibbles, MbusRxMsgStruct *pMbusMsgOut);
+  extern int mbus_link_msgToStr(MbusRxMsgStruct *pMbusMsgIn,
                                 char *strOut,
                                 unsigned int strOutMaxSize);
 #ifdef __cplusplus

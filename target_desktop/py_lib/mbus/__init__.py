@@ -260,7 +260,7 @@ class MbusMsgParsedStruct(ctypes.Structure):
         return "{} {:15} {}".format(dirStr, msgTypeStr, bodyStr)
 
 
-class MbusMsgStruct(ctypes.Structure):
+class MbusRxMsgStruct(ctypes.Structure):
     _fields_ = [
         ("errId", ctypes.c_uint8),  # 0 = no error
         ("parsed", MbusMsgParsedStruct),   # if not an error, parsed contents here
