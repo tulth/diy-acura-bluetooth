@@ -22,14 +22,14 @@ extern "C" int main(void)
   MbusMsgStruct rxMsg;
   MbusPhyStruct phy;
   MbusLinkStruct link;
-  bool driveMbusPinLo;
+  bool driveMbusPinLo = false;
   char msgStr[MSG_STR_SIZE];
   int msgStrLen;
   
   usb_init();
-  PORTC_PCR5 |= PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1);
-  PORTC_PCR2 |= PORT_PCR_MUX(1) | PORT_PCR_PE | PORT_PCR_PS;
-  GPIOC_PDDR |= 0x20;  // gpio data direction reg, for led bit
+  PORTC_PCR5 = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1);
+  PORTC_PCR2 = PORT_PCR_MUX(1) | PORT_PCR_PE | PORT_PCR_PS;
+  GPIOC_PDDR |= (1<<5);  /* gpio data direction reg, for led bit */
 
   blinkMilliSecElapsed = 0;
 
@@ -58,6 +58,11 @@ extern "C" int main(void)
                     (GPIOC_PDIR & 0x04) != 0,
                     &driveMbusPinLo
                     );
+    if (driveMbusPinLo) {
+      GPIOC_PSOR = (1<<1);  // drive low, so we drive 1 out, which is inverted by the drive transistor
+    } else {
+      GPIOC_PCOR = (1<<1);  // don't pull low
+    }
 
     /* phy->link */
     if (!mbus_phy_rx_is_empty(&phy)) {

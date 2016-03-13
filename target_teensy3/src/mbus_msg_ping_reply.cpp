@@ -23,18 +23,18 @@ extern "C" int main(void)
   MbusMsgStruct rxMsg;
   MbusPhyStruct phy;
   MbusLinkStruct link;
-  bool driveMbusPinLo;
+  bool driveMbusPinLo = false;
   char msgStr[MSG_STR_SIZE];
   int msgStrLen;
   
   usb_init();
-  PORTC_PCR5 |= PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* LED */
-  PORTC_PCR2 |= PORT_PCR_PE  | PORT_PCR_PS  | PORT_PCR_MUX(1); /* MBUS SENSE */
-  //  PORTC_PCR1 |= PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* MBUS DRIVE LO */
+  PORTC_PCR5 = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* LED */
+  PORTC_PCR2 = PORT_PCR_PE  | PORT_PCR_PS  | PORT_PCR_MUX(1); /* MBUS SENSE */
+  PORTC_PCR1 = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* MBUS DRIVE LO */
   
   GPIOC_PDDR |= (1<<5);  /* gpio data direction reg, for led bit */
   GPIOC_PDDR |= (1<<1);  /* gpio data direction reg, for driveMbusPinLo */
-  //  GPIOC_PCOR = (1<<1);  // don't drive low
+  GPIOC_PCOR = (1<<1);  // don't drive low
 
   blinkMilliSecElapsed = 0;
 
@@ -63,11 +63,11 @@ extern "C" int main(void)
                     (GPIOC_PDIR & 0x04) != 0,
                     &driveMbusPinLo
                     );
-    // if (driveMbusPinLo) {
-    //   GPIOC_PSOR = (1<<1);  // drive low, so we drive 1 out, which is inverted by the drive transistor
-    // } else {
-    //   GPIOC_PCOR = (1<<1);  // don't pull low
-    // }
+    if (driveMbusPinLo) {
+      GPIOC_PSOR = (1<<1);  // drive low, so we drive 1 out, which is inverted by the drive transistor
+    } else {
+      GPIOC_PCOR = (1<<1);  // don't pull low
+    }
 
     /* phy->link */
     if (!mbus_phy_rx_is_empty(&phy)) {
@@ -94,7 +94,7 @@ extern "C" int main(void)
     }
     /* if tx has something to send and in rx mode and not busy, tx enable */
     if (!mbus_phy_tx_is_empty(&phy) &&
-        mbus_phy_rx_is_enabled(&phy) &&
+        !mbus_phy_tx_is_enabled(&phy) &&
         !mbus_phy_rx_is_busy(&phy)) {
       //      mbus_phy_rx_disable(&phy);
       mbus_phy_tx_enable(&phy);

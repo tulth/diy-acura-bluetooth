@@ -15,9 +15,10 @@ extern "C" int main(void)
   bool pinVal, prevPinVal;
   
   usb_init();
-  PORTC_PCR5 |= PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1);
-  PORTC_PCR2 |= PORT_PCR_MUX(1) | PORT_PCR_PE | PORT_PCR_PS;
-  GPIOC_PDDR |= 0x20;  // gpio data direction reg, for led bit
+  PORTC_PCR5 = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1);
+  PORTC_PCR2 = PORT_PCR_MUX(1) | PORT_PCR_PE | PORT_PCR_PS;
+
+  GPIOC_PDDR |= (1<<5);  /* gpio data direction reg, for led bit */
 
   usb_serial_write("vcd:\n", 6);
   blinkMilliSecElapsed = 0;
