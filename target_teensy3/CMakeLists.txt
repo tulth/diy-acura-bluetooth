@@ -30,7 +30,7 @@ SET(CMAKE_C_FLAGS "${COMMON_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "-Wl,--gc-sections -specs=nano.specs -specs=nosys.specs -T../submodule_teensy_cores/teensy3/mk20dx256.ld ")
 add_definitions(-DUSB_SERIAL -DLAYOUT_US_ENGLISH -DTEENSYDUINO=124 -DF_CPU=48000000 -D__MK20DX256__ )
 
-include_directories("./submodule_teensy_cores/teensy3" "../common" "../common/mbus" "./arm_lib/include" )
+include_directories("./submodule_teensy_cores/teensy3" "../common" "../common/mbus" "../common/rn52" "./arm_lib/include" )
 
 ##############################
 file(GLOB TEENSY3_SRC "submodule_teensy_cores/teensy3/*.c" "submodule_teensy_cores/teensy3/*.cpp")
@@ -38,12 +38,12 @@ list(REMOVE_ITEM TEENSY3_SRC "${CMAKE_CURRENT_SOURCE_DIR}/submodule_teensy_cores
 add_library(teensy3 STATIC ${TEENSY3_SRC})
 
 ##############################
-file(GLOB CMN_SRC "../common/*.cpp" "../common/*.c" "../common/mbus/*.cpp" "../common/mbus/*.c")
+file(GLOB CMN_SRC "../common/*.cpp" "../common/*.c" "../common/mbus/*.cpp" "../common/mbus/*.c" "../common/rn52/*.cpp" "../common/rn52/*.c")
 add_library(cmn STATIC ${CMN_SRC})
 set_target_properties(cmn PROPERTIES COMPILE_FLAGS "-Wpedantic -Wextra -Werror")
 
 ##############################
-foreach( top_src mbus_toggle_sniffer.cpp mbus_nibble_sniffer.cpp mbus_msg_sniffer.cpp mbus_toggle_bridge.cpp mbus_nibble_bridge.cpp bt_bridge.cpp mbus_msg_ping_reply.cpp )
+foreach( top_src mbus_toggle_sniffer.cpp mbus_nibble_sniffer.cpp mbus_msg_sniffer.cpp mbus_toggle_bridge.cpp mbus_nibble_bridge.cpp bt_bridge.cpp bt_demo.cpp app_demo.cpp mbus_msg_ping_reply.cpp )
     string( REPLACE ".cpp" ".elf" top_elf ${top_src} )
     add_executable( ${top_elf} src/${top_src} )
     target_link_libraries( ${top_elf} cmn teensy3 )

@@ -4,7 +4,9 @@
 #include <core_pins.h>
 #include "mbus_phy.h"
 #include "mbus_link.h"
+#include "rn52.h"
 
+#define RN52_AVRCP_CMD_MEM_SIZE 16
 #define BYTE_MEM_SIZE 64
 #define MSG_MEM_SIZE 2
 #define MSG_STR_SIZE 256
@@ -12,8 +14,11 @@
 #define PINBIT_LED (1<<5)
 #define PINBIT_MBUS_SENSE (1<<2)
 #define PINBIT_MBUS_DRIVE_LO (1<<1)
+#define PINBIT_RN52_CMDLO (1<<13)
+#define PINBIT_RN52_CONNSTAT_EVENT (1<<7)
 
 #define USBSERIAL Serial
+#define HWSERIAL1 Serial1
 
 extern "C" int main(void)
 {
@@ -24,23 +29,33 @@ extern "C" int main(void)
   MbusRxMsgStruct rxMsgMem[MSG_MEM_SIZE];
   MbusTxMsgStruct txMsgMem[MSG_MEM_SIZE];
   MbusRxMsgStruct rxMsg;
+  MbusTxMsgStruct txMsg;
   MbusPhyStruct mbusPhy;
   MbusLinkStruct mbusLink;
   bool driveMbusPinLo = false;
   bool mbusPhyDirectionUpdated;
   char msgStr[MSG_STR_SIZE];
   int msgStrLen;
+  /* for rn52 bluetooth */
+  Rn52Struct rn52;
+  bool rn52CmdModePin = true;
+  uint8_t rn52AvrcpCmdMem[RN52_AVRCP_CMD_MEM_SIZE];
 
   PORTC_PCR5 = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* LED */
   PORTC_PCR2 = PORT_PCR_PE  | PORT_PCR_PS  | PORT_PCR_MUX(1); /* MBUS SENSE */
   PORTC_PCR1 = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* MBUS DRIVE LO */
+  PORTA_PCR13 = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* RN52 CMD LO */
+  PORTD_PCR7 = PORT_PCR_PE  | PORT_PCR_PS  | PORT_PCR_MUX(1); /* RN52 connection status change bit */
 
   GPIOC_PDDR |= PINBIT_LED;  /* gpio data direction reg, for led bit */
   GPIOC_PDDR |= PINBIT_MBUS_DRIVE_LO;  /* gpio data direction reg, for driveMbusPinLo */
-  
-  GPIOC_PCOR = PINBIT_LED;  /* set led bit low */
-  GPIOC_PCOR = PINBIT_MBUS_DRIVE_LO;  /* don't drive low */
+  GPIOA_PDDR |= PINBIT_RN52_CMDLO;  /* gpio data direction reg, for cmd lo */
 
+  GPIOC_PCOR = PINBIT_LED;  /* set led bit low */
+  GPIOC_PCOR = PINBIT_MBUS_DRIVE_LO;  /* don't drive mbus low */
+  GPIOC_PSOR = PINBIT_RN52_CMDLO;  /* don't drive rn52 cmd request low (yet) */
+
+  HWSERIAL1.begin(115200);
   USBSERIAL.begin(115200);
   blinkMilliSecElapsed = 0;
   mbus_phy_init(&mbusPhy,
@@ -55,7 +70,14 @@ extern "C" int main(void)
                  txMsgMem,
                  MSG_MEM_SIZE * sizeof(MbusTxMsgStruct),
                  &(mbusPhy.tx.byteFifo));
-
+  rn52_init(&rn52,
+            serial_available,
+            serial_getchar,
+            serial_putchar,
+            rn52AvrcpCmdMem,
+            sizeof(rn52AvrcpCmdMem)
+            );
+  
   while (1) {
     /* blink */
     if (blinkMilliSecElapsed > 1000) {
@@ -74,7 +96,18 @@ extern "C" int main(void)
     } else {
       GPIOC_PCOR = PINBIT_MBUS_DRIVE_LO;  /* don't pull low */
     }
-
+    
+    /* rn 52 bluetooth */
+    rn52_update(&rn52,
+                millis(),
+                (GPIOC_PDIR & PINBIT_RN52_CONNSTAT_EVENT) != 0,
+                &rn52CmdModePin);
+    if (rn52CmdModePin) {
+      GPIOC_PSOR = PINBIT_RN52_CMDLO;
+    } else {
+      GPIOC_PCOR = PINBIT_RN52_CMDLO;
+    }
+    
     /* mbusPhy->mbusLink */
     if (!mbus_phy_rx_is_empty(&mbusPhy)) {
       rxNibble = mbus_phy_rx_pop(&mbusPhy);
@@ -95,17 +128,22 @@ extern "C" int main(void)
     /* print mbusLink rx msg if one is available */
     if (!mbus_link_rx_is_empty(&mbusLink)) {
       mbus_link_rx_pop(&mbusLink, &rxMsg);
-      if ((!rxMsg.errId) && (rxMsg.parsed.directionH2C)) {
-        if (rxMsg.parsed.msgType == MSGTYPE_ping) {
-          mbus_phy_tx_push(&mbusPhy, 0x9);
-          mbus_phy_tx_push(&mbusPhy, 0x8);
-          mbus_phy_tx_push(&mbusPhy, 0x2);
-          USBSERIAL.println("sent pong");
-        }
-      }
       msgStrLen = mbus_link_msgToStr(&rxMsg,
                                      msgStr,
                                      MSG_STR_SIZE);
+      if ((!rxMsg.errId) && (rxMsg.parsed.directionH2C)) {
+        if (rxMsg.parsed.msgType == MSGTYPE_ping) {
+          txMsg.nibbles.packNibbles = 0x982;
+          txMsg.nibbles.numNibbles = 3;
+          mbus_link_tx_push(&mbusLink, &txMsg);
+          USBSERIAL.println("sent pong");
+        } else if (rxMsg.parsed.msgType == MSGTYPE_setPlayState && rxMsg.parsed.body.setPlayState.play) {
+          txMsg.nibbles.packNibbles = 0x9BA1002000A2;
+          txMsg.nibbles.numNibbles = 16;
+          mbus_link_tx_push(&mbusLink, &txMsg);
+          USBSERIAL.println("sent no shuttle reply");
+        }
+      }
       USBSERIAL.println(msgStr);
     }
 

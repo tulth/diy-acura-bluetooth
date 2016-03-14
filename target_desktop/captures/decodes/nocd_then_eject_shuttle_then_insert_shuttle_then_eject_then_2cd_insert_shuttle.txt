@@ -1,0 +1,227 @@
+18A                H2C ping            
+982                C2H pong            
+18A                H2C ping            
+982                C2H pong            
+18A                H2C ping            
+982                C2H pong            
+9BA00080009A       C2H changing        disk#0 Trk00 eject1 noshuttle0 busy0 repeatAll0 repeatOne0 random0 done1
+93T                ERROR: CheckSum
+0065AA1T           ERROR: CheckSum
+9B80008000A9       C2H changing        disk#0 Trk00 eject1 noshuttle0 busy0 repeatAll0 repeatOne0 random0 done0
+9F0                ERROR: CheckSum
+01635T             ERROR: CheckSum
+9BA0008000AB       C2H changing        disk#0 Trk00 eject1 noshuttle0 busy0 repeatAll0 repeatOne0 random0 done0
+9F00CD17           C2H ackWait         
+9BA1002002A4       C2H changing        disk#1 Trk00 eject0 noshuttle1 busy0 repeatAll0 repeatOne0 random0 done0
+114000005          H2C setMode         repeatAll0 repeatOne0 introScan0 random0
+9BA1002000A2       C2H changing        disk#1 Trk00 eject0 noshuttle1 busy0 repeatAll0 repeatOne0 random0 done0
+18A                H2C ping            
+982                C2H pong            
+18A                H2C ping            
+982                C2H pong            
+18A                H2C ping            
+982                C2H pong            
+9BA1000000A4       C2H changing        disk#1 Trk00 eject0 noshuttle0 busy0 repeatAll0 repeatOne0 random0 done0
+9F0T               ERROR: CheckSum
+0CD53              ERROR: CheckSum
+9BB1001000A4       C2H changing        disk#1 Trk00 eject0 noshuttle0 busy1 repeatAll0 repeatOne0 random0 done0
+111011             H2C setPlayState    resume0 stop0 scanStop0 fastReverse0 fastForward0 pause0 play1
+9BB100100019       C2H changing        disk#1 Trk00 eject0 noshuttle0 busy1 repeatAll0 repeatOne0 random0 done1
+9F0022T            ERROR: CheckSum
+2E0T               ERROR: CheckSum
+9BC100100010       C2H changing        disk#1 Trk00 eject0 noshuttle0 busy1 repeatAll0 repeatOne0 random0 done1
+9D002A69           ERROR: CheckSum
+9B81001000T        ERROR: CheckSum
+1C                 ERROR: Bad message length
+9F005462           C2H ackWait         
+9F005462           C2H ackWait         
+9F005462           C2H ackWait         
+9B910000001C       C2H changing        disk#1 Trk00 eject0 noshuttle0 busy0 repeatAll0 repeatOne0 random0 done1
+9910001000000012   C2H playState       Trk:Idx 00:01 min:sec 00:00 repeatAll0 repeatOne0 introScan0 random0 stop0 pause0 play1
+9F005462           C2H ackWait         
+9B910010001B       C2H changing        disk#1 Trk00 eject0 noshuttle0 busy1 repeatAll0 repeatOne0 random0 done1
+9920001000000013   C2H playState       Trk:Idx 00:01 min:sec 00:00 repeatAll0 repeatOne0 introScan0 random0 stop0 pause0 play1
+93T                ERROR: CheckSum
+00A8C2T            ERROR: CheckSum
+9BD10050000T       ERROR: CheckSum
+D1T                ERROR: CheckSum
+93T                ERROR: CheckSum
+80152E0T           ERROR: CheckSum
+9BB20010000T       ERROR: CheckSum
+C                  ERROR: Bad message length
+9F004652           C2H ackWait         
+9BC20010001D       C2H changing        disk#2 Trk00 eject0 noshuttle0 busy1 repeatAll0 repeatOne0 random0 done1
+93T                ERROR: CheckSum
+0023311T           ERROR: CheckSum
+9B8200100T         ERROR: CheckSum
+019                ERROR: CheckSum
+9F007464           C2H ackWait         
+9B9200000019       C2H changing        disk#2 Trk00 eject0 noshuttle0 busy0 repeatAll0 repeatOne0 random0 done1
+9F007464           C2H ackWait         
+9910001000000012   C2H playState       Trk:Idx 00:01 min:sec 00:00 repeatAll0 repeatOne0 introScan0 random0 stop0 pause0 play1
+9F007464           C2H ackWait         
+9B920010001A       C2H changing        disk#2 Trk00 eject0 noshuttle0 busy1 repeatAll0 repeatOne0 random0 done1
+9920001000000013   C2H playState       Trk:Idx 00:01 min:sec 00:00 repeatAll0 repeatOne0 introScan0 random0 stop0 pause0 play1
+93T                ERROR: CheckSum
+007464             ERROR: CheckSum
+9BD20050001A       C2H changing        disk#2 Trk00 eject0 noshuttle0 busy1 repeatAll0 repeatOne0 random0 done1
+93T                ERROR: CheckSum
+0023290T           ERROR: CheckSum
+9BB300100012T      ERROR: CheckSum
+0T                 ERROR: Bad message length
+9F006654           C2H ackWait         
+9BC30010001E       C2H changing        disk#3 Trk00 eject0 noshuttle0 busy1 repeatAll0 repeatOne0 random0 done1
+93T                ERROR: CheckSum
+0033301T           ERROR: CheckSum
+9B830010001A       C2H changing        disk#3 Trk00 eject0 noshuttle0 busy1 repeatAll0 repeatOne0 random0 done1
+9F00936B           C2H ackWait         
+9B930000001A       C2H changing        disk#3 Trk00 eject0 noshuttle0 busy0 repeatAll0 repeatOne0 random0 done1
+9F00936B           C2H ackWait         
+9910001000000012   C2H playState       Trk:Idx 00:01 min:sec 00:00 repeatAll0 repeatOne0 introScan0 random0 stop0 pause0 play1
+9F00936B           C2H ackWait         
+9B9300100019       C2H changing        disk#3 Trk00 eject0 noshuttle0 busy1 repeatAll0 repeatOne0 random0 done1
+9920001000000013   C2H playState       Trk:Idx 00:01 min:sec 00:00 repeatAll0 repeatOne0 introScan0 random0 stop0 pause0 play1
+9C                 ERROR: Bad message length
+0126D3T            ERROR: CheckSum
+9BD300500019       C2H changing        disk#3 Trk00 eject0 noshuttle0 busy1 repeatAll0 repeatOne0 random0 done1
+9D006452           ERROR: CheckSum
+9BB400100013T      ERROR: CheckSum
+9F00855F           C2H ackWait         
+9BC40010001B       C2H changing        disk#4 Trk00 eject0 noshuttle0 busy1 repeatAll0 repeatOne0 random0 done1
+93T                ERROR: CheckSum
+8043371T           ERROR: CheckSum
+9B840010T          ERROR: CheckSum
+001F               ERROR: CheckSum
+9F00B369           C2H ackWait         
+9B940000001F       C2H changing        disk#4 Trk00 eject0 noshuttle0 busy0 repeatAll0 repeatOne0 random0 done1
+9F00B369           C2H ackWait         
+9910001000000012   C2H playState       Trk:Idx 00:01 min:sec 00:00 repeatAll0 repeatOne0 introScan0 random0 stop0 pause0 play1
+9F00B369           C2H ackWait         
+9B9400100010       C2H changing        disk#4 Trk00 eject0 noshuttle0 busy1 repeatAll0 repeatOne0 random0 done1
+9920001000000013   C2H playState       Trk:Idx 00:01 min:sec 00:00 repeatAll0 repeatOne0 introScan0 random0 stop0 pause0 play1
+9C                 ERROR: Bad message length
+0166D1T            ERROR: CheckSum
+9BD400500010       C2H changing        disk#4 Trk00 eject0 noshuttle0 busy1 repeatAll0 repeatOne0 random0 done1
+93T                ERROR: CheckSum
+8041AC1T           ERROR: CheckSum
+9BB50010001D       C2H changing        disk#5 Trk00 eject0 noshuttle0 busy1 repeatAll0 repeatOne0 random0 done1
+1F00A55D           ERROR: CheckSum
+9BC50010001C       C2H changing        disk#5 Trk00 eject0 noshuttle0 busy1 repeatAll0 repeatOne0 random0 done1
+93T                ERROR: CheckSum
+0052B00T           ERROR: CheckSum
+9B8500100010       C2H changing        disk#5 Trk00 eject0 noshuttle0 busy1 repeatAll0 repeatOne0 random0 done1
+9F00D260           C2H ackWait         
+9B9500000010       C2H changing        disk#5 Trk00 eject0 noshuttle0 busy0 repeatAll0 repeatOne0 random0 done1
+9F00D260           C2H ackWait         
+9910001000000012   C2H playState       Trk:Idx 00:01 min:sec 00:00 repeatAll0 repeatOne0 introScan0 random0 stop0 pause0 play1
+9F00D260           C2H ackWait         
+9B950010001F       C2H changing        disk#5 Trk00 eject0 noshuttle0 busy1 repeatAll0 repeatOne0 random0 done1
+9920001000000013   C2H playState       Trk:Idx 00:01 min:sec 00:00 repeatAll0 repeatOne0 introScan0 random0 stop0 pause0 play1
+93T                ERROR: CheckSum
+01A4C0T            ERROR: CheckSum
+9BD50050001F       C2H changing        disk#5 Trk00 eject0 noshuttle0 busy1 repeatAll0 repeatOne0 random0 done1
+93T                ERROR: CheckSum
+0051AD1T           ERROR: CheckSum
+9BB600100010T      ERROR: CheckSum
+9F00C45C           C2H ackWait         
+9BC600100019       C2H changing        disk#6 Trk00 eject0 noshuttle0 busy1 repeatAll0 repeatOne0 random0 done1
+93T                ERROR: CheckSum
+0062341T           ERROR: CheckSum
+9B860010T          ERROR: CheckSum
+000E1T             ERROR: CheckSum
+9F00F26E           C2H ackWait         
+9B960000001D       C2H changing        disk#6 Trk00 eject0 noshuttle0 busy0 repeatAll0 repeatOne0 random0 done1
+9F00F26E           C2H ackWait         
+9910001000000012   C2H playState       Trk:Idx 00:01 min:sec 00:00 repeatAll0 repeatOne0 introScan0 random0 stop0 pause0 play1
+9F00F26E           C2H ackWait         
+9920001000000013   C2H playState       Trk:Idx 00:01 min:sec 00:00 repeatAll0 repeatOne0 introScan0 random0 stop0 pause0 play1
+9C00F26E           ERROR: CheckSum
+9BD60040001D       C2H changing        disk#6 Trk00 eject0 noshuttle0 busy0 repeatAll0 repeatOne0 random0 done1
+9F00C25E           C2H ackWait         
+9B800000001C       C2H changing        disk#0 Trk00 eject0 noshuttle0 busy0 repeatAll0 repeatOne0 random0 done1
+9F00CC54           C2H ackWait         
+9BA00000001A       C2H changing        disk#0 Trk00 eject0 noshuttle0 busy0 repeatAll0 repeatOne0 random0 done1
+18A                H2C ping            
+982                C2H pong            
+18A                H2C ping            
+982                C2H pong            
+9BA000800012       C2H changing        disk#0 Trk00 eject1 noshuttle0 busy0 repeatAll0 repeatOne0 random0 done1
+9C                 ERROR: Bad message length
+0198A4T            ERROR: CheckSum
+9B8000800021       C2H changing        disk#0 Trk00 eject1 noshuttle0 busy0 repeatAll0 repeatOne0 random0 done0
+9F00T              ERROR: CheckSum
+02C71T             ERROR: CheckSum
+9BA000800023       C2H changing        disk#0 Trk00 eject1 noshuttle0 busy0 repeatAll0 repeatOne0 random0 done0
+9F00CD17           C2H ackWait         
+9BA10020022C       C2H changing        disk#1 Trk00 eject0 noshuttle1 busy0 repeatAll0 repeatOne0 random0 done0
+114000005          H2C setMode         repeatAll0 repeatOne0 introScan0 random0
+9BA10020002A       C2H changing        disk#1 Trk00 eject0 noshuttle1 busy0 repeatAll0 repeatOne0 random0 done0
+18A                H2C ping            
+982                C2H pong            
+18A                H2C ping            
+982                C2H pong            
+18A                H2C ping            
+982                C2H pong            
+18A                H2C ping            
+982                C2H pong            
+18A                H2C ping            
+982                C2H pong            
+18A                H2C ping            
+982                C2H pong            
+18A                H2C ping            
+982                C2H pong            
+9BA10000002C       C2H changing        disk#1 Trk00 eject0 noshuttle0 busy0 repeatAll0 repeatOne0 random0 done0
+9F0T               ERROR: CheckSum
+0CD53              ERROR: CheckSum
+9BB10010002C       C2H changing        disk#1 Trk00 eject0 noshuttle0 busy1 repeatAll0 repeatOne0 random0 done0
+9F0022T            ERROR: CheckSum
+2E0T               ERROR: CheckSum
+9BC10010002D       C2H changing        disk#1 Trk00 eject0 noshuttle0 busy1 repeatAll0 repeatOne0 random0 done0
+93T                ERROR: CheckSum
+0015341T           ERROR: CheckSum
+9B81001000T        ERROR: CheckSum
+29                 ERROR: Bad message length
+9F005462           C2H ackWait         
+9B9100000029       C2H changing        disk#1 Trk00 eject0 noshuttle0 busy0 repeatAll0 repeatOne0 random0 done0
+9F005462           C2H ackWait         
+9910001000000023   C2H playState       Trk:Idx 00:01 min:sec 00:00 repeatAll0 repeatOne0 introScan0 random0 stop0 pause1 play0
+18A                H2C ping            
+982                C2H pong            
+9F0T               ERROR: CheckSum
+02A0T              ERROR: CheckSum
+82T                ERROR: CheckSum
+9C1010T            ERROR: CheckSum
+54E015F1T          ERROR: CheckSum
+9D000000005        C2H unknownStatus   
+9950T              ERROR: CheckSum
+04040000000A0T     ERROR: CheckSum
+9F005462           C2H ackWait         
+9930101000000022   C2H playState       Trk:Idx 01:01 min:sec 00:00 repeatAll0 repeatOne0 introScan0 random0 stop0 pause1 play0
+9F005462           C2H ackWait         
+9C1011538457D      C2H diskInfo        disk#1 tracks 15 min:sec 38:45 flags 7
+111011             H2C setPlayState    resume0 stop0 scanStop0 fastReverse0 fastForward0 pause0 play1
+9D000000005        C2H unknownStatus   
+9930101000000022   C2H playState       Trk:Idx 01:01 min:sec 00:00 repeatAll0 repeatOne0 introScan0 random0 stop0 pause1 play0
+111011             H2C setPlayState    resume0 stop0 scanStop0 fastReverse0 fastForward0 pause0 play1
+9F005462           C2H ackWait         
+9940101000T        ERROR: CheckSum
+0T                 ERROR: Bad message length
+0T                 ERROR: Bad message length
+0T                 ERROR: Bad message length
+0T                 ERROR: Bad message length
+0T                 ERROR: Bad message length
+1T                 ERROR: Bad message length
+0T                 ERROR: Bad message length
+01                 ERROR: Bad message length
+0T                 ERROR: Bad message length
+20T                ERROR: CheckSum
+00T                ERROR: CheckSum
+00000B0T           ERROR: CheckSum
+9940101000000016   C2H playState       Trk:Idx 01:01 min:sec 00:00 repeatAll0 repeatOne0 introScan0 random0 stop0 pause0 play1
+9940101000100015   C2H playState       Trk:Idx 01:01 min:sec 00:01 repeatAll0 repeatOne0 introScan0 random0 stop0 pause0 play1
+9940101000200018   C2H playState       Trk:Idx 01:01 min:sec 00:02 repeatAll0 repeatOne0 introScan0 random0 stop0 pause0 play1
+9940101000300017   C2H playState       Trk:Idx 01:01 min:sec 00:03 repeatAll0 repeatOne0 introScan0 random0 stop0 pause0 play1
+9940101000400012   C2H playState       Trk:Idx 01:01 min:sec 00:04 repeatAll0 repeatOne0 introScan0 random0 stop0 pause0 play1
+9940101000500011   C2H playState       Trk:Idx 01:01 min:sec 00:05 repeatAll0 repeatOne0 introScan0 random0 stop0 pause0 play1
+9940101000600014   C2H playState       Trk:Idx 01:01 min:sec 00:06 repeatAll0 repeatOne0 introScan0 random0 stop0 pause0 play1
+9940101000700013   C2H playState       Trk:Idx 01:01 min:sec 00:07 repeatAll0 repeatOne0 introScan0 random0 stop0 pause0 play1

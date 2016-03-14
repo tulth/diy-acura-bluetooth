@@ -516,7 +516,7 @@ void _sendPendingTxMsg(MbusLinkStruct *pMbusLink)
   
   _mbus_link_tx_pop(pMbusLink, &txMsg);
 
-  for (mask = 0xf << txMsg.nibbles.numNibbles; mask != 0x0; mask = mask >> 4) {
+  for (mask = 0xf << txMsg.nibbles.numNibbles-1; mask != 0x0; mask = mask >> 4) {
     nibble = mask & txMsg.nibbles.packNibbles;
     fifo_push(pMbusLink->phyTxNibbleFifo, &nibble);
   }

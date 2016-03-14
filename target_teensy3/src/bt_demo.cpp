@@ -2,6 +2,8 @@
 #include <WProgram.h>
 #include "rn52.h"
 
+#define RN52_AVRCP_CMD_MEM_SIZE 16
+
 #define PINBIT_LED (1<<5)
 #define PINBIT_RN52_CMDLO (1<<13)
 #define PINBIT_RN52_CONNSTAT_EVENT (1<<7)
@@ -16,6 +18,9 @@ void reconnectRn52(void);
 extern "C" int main(void)
 {
   int incomingByte;
+  Rn52Struct rn52;
+  bool cmdPin = true;
+  uint8_t avrcpCmdMem[RN52_AVRCP_CMD_MEM_SIZE];
 
   PORTA_PCR13 = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* CMD LO */
   PORTC_PCR5 = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* LED */
@@ -28,10 +33,27 @@ extern "C" int main(void)
 
   HWSERIAL1.begin(115200);
   USBSERIAL.begin(115200);
-  setCmdMode();
-  reconnectRn52();
 
+  rn52_init(&rn52,
+            serial_available,
+            serial_getchar,
+            serial_putchar,
+            avrcpCmdMem,
+            sizeof(avrcpCmdMem)
+            );
+  
   while (1) {
+    rn52_update(&rn52,
+                millis(),
+                (GPIOC_PDIR & PINBIT_RN52_CONNSTAT_EVENT) != 0,
+                &cmdPin);
+    if (cmdPin) {
+      GPIOC_PSOR = PINBIT_RN52_CMDLO;
+    } else {
+      GPIOC_PCOR = PINBIT_RN52_CMDLO;
+    }
+
+    
     if (USBSERIAL.available() > 0) {
       GPIOC_PSOR = PINBIT_LED;  /* set led high */
       incomingByte = USBSERIAL.read();
