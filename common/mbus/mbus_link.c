@@ -490,7 +490,6 @@ void mbus_link_update(MbusLinkStruct *pMbusLink,
                       bool *phyDirectionUpdated)
 {
   *phyDirectionUpdated = false;  /* until proven otherwise */
-  
   /* if in rx mode, and tx has something to send and phy rx not busy, switch to tx mode */
   if (pMbusLink->rxNotTxMode) {
     if (!mbusPhyRxBusy && !mbus_link_tx_is_empty(pMbusLink)) {
@@ -503,7 +502,9 @@ void mbus_link_update(MbusLinkStruct *pMbusLink,
       pMbusLink->rxNotTxMode = true;
       *phyDirectionUpdated = true;
     } else {
-      _sendPendingTxMsg(pMbusLink);
+      if (!mbus_link_tx_is_empty(pMbusLink)) {
+        _sendPendingTxMsg(pMbusLink);
+      }
     }
   }
 }
@@ -511,13 +512,12 @@ void mbus_link_update(MbusLinkStruct *pMbusLink,
 void _sendPendingTxMsg(MbusLinkStruct *pMbusLink)
 {
   MbusTxMsgStruct txMsg;
-  uint64_t mask;
   uint8_t nibble, idx;
   
   _mbus_link_tx_pop(pMbusLink, &txMsg);
 
-  for (mask = 0xf << txMsg.nibbles.numNibbles-1; mask != 0x0; mask = mask >> 4) {
-    nibble = mask & txMsg.nibbles.packNibbles;
+  for (idx=0; idx<txMsg.nibbles.numNibbles; idx++) {
+    nibble = (txMsg.nibbles.packNibbles >> (4*(txMsg.nibbles.numNibbles - idx - 1))) & 0x0f;
     fifo_push(pMbusLink->phyTxNibbleFifo, &nibble);
   }
 }

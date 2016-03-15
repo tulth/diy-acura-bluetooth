@@ -56,7 +56,7 @@ void mbus_phy_tx_disable(MbusPhyStruct *pMbusPhy)
 bool mbus_phy_tx_is_busy(MbusPhyStruct *pMbusPhy)
 {
   if (pMbusPhy->tx.state == MBUS_STATE_TX_DISABLED) {
-    return true;
+    return false;
   } else if (pMbusPhy->tx.state != MBUS_STATE_TX_IDLE) {
     return true;
   } else {

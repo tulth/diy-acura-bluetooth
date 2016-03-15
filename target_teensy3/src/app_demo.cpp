@@ -97,17 +97,6 @@ extern "C" int main(void)
       GPIOC_PCOR = PINBIT_MBUS_DRIVE_LO;  /* don't pull low */
     }
     
-    /* rn 52 bluetooth */
-    rn52_update(&rn52,
-                millis(),
-                (GPIOC_PDIR & PINBIT_RN52_CONNSTAT_EVENT) != 0,
-                &rn52CmdModePin);
-    if (rn52CmdModePin) {
-      GPIOC_PSOR = PINBIT_RN52_CMDLO;
-    } else {
-      GPIOC_PCOR = PINBIT_RN52_CMDLO;
-    }
-    
     /* mbusPhy->mbusLink */
     if (!mbus_phy_rx_is_empty(&mbusPhy)) {
       rxNibble = mbus_phy_rx_pop(&mbusPhy);
@@ -121,7 +110,7 @@ extern "C" int main(void)
         mbus_phy_tx_disable(&mbusPhy);
         mbus_phy_rx_enable(&mbusPhy);
       } else {
-        mbus_phy_rx_disable(&mbusPhy);
+        //        mbus_phy_rx_disable(&mbusPhy);
         mbus_phy_tx_enable(&mbusPhy);
       }
     }
@@ -139,7 +128,7 @@ extern "C" int main(void)
           USBSERIAL.println("sent pong");
         } else if (rxMsg.parsed.msgType == MSGTYPE_setPlayState && rxMsg.parsed.body.setPlayState.play) {
           txMsg.nibbles.packNibbles = 0x9BA1002000A2;
-          txMsg.nibbles.numNibbles = 16;
+          txMsg.nibbles.numNibbles = 12;
           mbus_link_tx_push(&mbusLink, &txMsg);
           USBSERIAL.println("sent no shuttle reply");
         }
@@ -148,6 +137,19 @@ extern "C" int main(void)
     }
 
     yield();
+  }
+  { /* FIXME */
+    /* rn 52 bluetooth */
+    rn52_update(&rn52,
+                millis(),
+                (GPIOC_PDIR & PINBIT_RN52_CONNSTAT_EVENT) != 0,
+                &rn52CmdModePin);
+    if (rn52CmdModePin) {
+      GPIOC_PSOR = PINBIT_RN52_CMDLO;
+    } else {
+      GPIOC_PCOR = PINBIT_RN52_CMDLO;
+    }
+    
   }
 }
 
