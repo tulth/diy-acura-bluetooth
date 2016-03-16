@@ -48,12 +48,16 @@ void rn52_update(Rn52Struct *pRn52,
   uint8_t avrcpCmd;
   char *pTxChar;
   int idx;
+  char rxC;
   uint8_t entryState = pRn52->state;
-  
   if (pRn52->pFuncSerialAvailable()) {
-    pRn52->rxStr[pRn52->rxStrLen] = pRn52->pFuncSerialGetChar();
+    rxC = pRn52->pFuncSerialGetChar();
+    pRn52->rxStr[pRn52->rxStrLen] = rxC;
     pRn52->rxStrLen++;
+    //    app_debug_printf("rx: %c, l:%d", rxC, pRn52->rxStrLen);
   }
+  //  app_debug_printf("s: %d", entryState);
+  
   switch (pRn52->state) {
   case RN52_STATE_STARTING_UP:
     pRn52->state = RN52_STATE_SWITCH_TO_CMD_MODE;
@@ -71,10 +75,11 @@ void rn52_update(Rn52Struct *pRn52,
     } else {
       strcpy(pRn52->txCmd,"B");
       pRn52->state = RN52_STATE_ACTION_CMD;
-      pRn52->returnState = RN52_STATE_DISCONNECT;
+      pRn52->returnState = RN52_STATE_CONNECT;
     }
     break;
   case RN52_STATE_CONNECT:
+    break;
     if (!pRn52->modeCmdNotData) {  /* FIXME: for now force cmd mode */
       pRn52->state = RN52_STATE_SWITCH_TO_CMD_MODE;
       pRn52->returnState = RN52_STATE_CONNECT;
@@ -110,15 +115,23 @@ void rn52_update(Rn52Struct *pRn52,
     }
     break;
   case RN52_STATE_SWITCH_TO_CMD_MODE:
-    *pCmdPin = false;
+    *pCmdPin = true;
     pRn52->milliSecTimeStamp = milliSecElapsed;
-    pRn52->state = RN52_STATE_SWITCH_TO_CMD_DELAY;
+    pRn52->state = RN52_STATE_SWITCH_TO_CMD_DELAY_HI;
     pRn52->rxStrLen = 0;
     break;
-  case RN52_STATE_SWITCH_TO_CMD_DELAY:
+  case RN52_STATE_SWITCH_TO_CMD_DELAY_HI:
+    if ((milliSecElapsed - pRn52->milliSecTimeStamp) > 500) {
+      pRn52->state = RN52_STATE_SWITCH_TO_CMD_DELAY_LO;
+      *pCmdPin = false;
+      pRn52->milliSecTimeStamp = milliSecElapsed;
+      pRn52->rxStrLen = 0;
+    }
+    break;
+  case RN52_STATE_SWITCH_TO_CMD_DELAY_LO:
     if ((milliSecElapsed - pRn52->milliSecTimeStamp) > 100) {
       pRn52->state = RN52_STATE_SWITCH_TO_CMD_AWAIT_RESP;
-      *pCmdPin = true;
+      *pCmdPin = false;
       pRn52->milliSecTimeStamp = milliSecElapsed;
     }
     break;
@@ -131,19 +144,26 @@ void rn52_update(Rn52Struct *pRn52,
         pRn52->modeCmdNotData = true;
       } else {
         /* bad response, try again */
+        app_debug_printf("bad resp");
         pRn52->state = RN52_STATE_SWITCH_TO_CMD_MODE;
         pRn52->rxStrLen = 0;
       }
-    } else if ((milliSecElapsed - pRn52->milliSecTimeStamp) > RN52_CMD_TIMEOUT_MILLSEC) {
+    } else if ((milliSecElapsed - pRn52->milliSecTimeStamp) > 5000) {
       /* timed out, try again */
+      app_debug_printf("timeout");
       pRn52->state = RN52_STATE_SWITCH_TO_CMD_MODE;
       pRn52->rxStrLen = 0;
     }
     break;
   case RN52_STATE_ACTION_CMD:
+    //app_debug_printf("sl: %d", strlen(pRn52->txCmd));
+    //    break;
+    pRn52->milliSecTimeStamp = milliSecElapsed;
     pTxChar = pRn52->txCmd;
-    while (pTxChar != '\0') {
+    app_debug_printf("txCmd: %s", pRn52->txCmd);
+    while (*pTxChar != '\0') {
       pRn52->pFuncSerialPutChar(*pTxChar);
+      //app_debug_print("b\n");
       pTxChar++;
     }
     pRn52->pFuncSerialPutChar('\r');
@@ -155,15 +175,18 @@ void rn52_update(Rn52Struct *pRn52,
     if (pRn52->rxStrLen >= 5) {
       if (strcmp(pRn52->rxStr, "AOK\r\n")) {
         /* got good response, return */
+        app_debug_printf("good");
         pRn52->state = pRn52->returnState;
         pRn52->rxStrLen = 0;
       } else {
         /* bad response, try again */
+        app_debug_printf("bad resp");
         pRn52->state = RN52_STATE_ACTION_CMD;
         pRn52->rxStrLen = 0;
       }
     } else if ((milliSecElapsed - pRn52->milliSecTimeStamp) > RN52_CMD_TIMEOUT_MILLSEC) {
       /* timed out, try again */
+      app_debug_printf("timeout");
       pRn52->state = RN52_STATE_ACTION_CMD;
       pRn52->rxStrLen = 0;
     }
@@ -172,11 +195,16 @@ void rn52_update(Rn52Struct *pRn52,
     pRn52->pFuncSerialPutChar('Q');
     pRn52->pFuncSerialPutChar('\r');
     pRn52->pFuncSerialPutChar('\n');
+    pRn52->state = RN52_STATE_QUERY_CONSTAT_AWAIT_RESP;
     break;
   case RN52_STATE_QUERY_CONSTAT_AWAIT_RESP:
+    pRn52->rxStr[pRn52->rxStrLen] = '\0';
+    app_debug_printf("rxs %d, %s", pRn52->rxStrLen, pRn52->rxStr);
+    // break;
     if (pRn52->rxStrLen >= 6) {
       if ((pRn52->rxStr[4] == '\r') && (pRn52->rxStr[5] == '\n')) {
         /* got good response, return */
+        app_debug_printf("good");
         pRn52->connectionStatus = 0;
         for (idx = 0; idx < 4; idx++) {
           pRn52->connectionStatus = pRn52->connectionStatus << 4;

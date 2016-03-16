@@ -111,7 +111,7 @@ void reconnectRn52(void)
   HWSERIAL1.println("B");
 }
 
-void app_debug_print(char *arg)
+void app_debug_print(const char *arg)
 {
   USBSERIAL.println(arg);
 }

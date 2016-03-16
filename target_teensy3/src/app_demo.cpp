@@ -54,7 +54,7 @@ extern "C" int main(void)
 
   GPIOC_PCOR = PINBIT_LED;  /* set led bit low */
   GPIOC_PCOR = PINBIT_MBUS_DRIVE_LO;  /* don't drive mbus low */
-  GPIOC_PSOR = PINBIT_RN52_CMDLO;  /* don't drive rn52 cmd request low (yet) */
+  GPIOA_PSOR = PINBIT_RN52_CMDLO;  /* don't drive rn52 cmd request low (yet) */
 
   HWSERIAL1.begin(115200);
   USBSERIAL.begin(115200);
@@ -78,7 +78,9 @@ extern "C" int main(void)
             rn52AvrcpCmdMem,
             sizeof(rn52AvrcpCmdMem)
             );
-  
+
+  delay(2000);
+  app_debug_print("start\n");
   while (1) {
     /* blink */
     if (blinkMilliSecElapsed > 1000) {
@@ -128,24 +130,38 @@ extern "C" int main(void)
           mbus_link_tx_push(&mbusLink, &txMsg);
           USBSERIAL.println("sent pong");
         } else if (rxMsg.parsed.msgType == MSGTYPE_setPlayState && rxMsg.parsed.body.setPlayState.play) {
-          txMsg.nibbles.packNibbles = 0x9BA1002000A2;
-          txMsg.nibbles.numNibbles = 12;
+          // txMsg.nibbles.packNibbles = 0x9BA1002000A2;
+          // txMsg.nibbles.numNibbles = 12;
+          txMsg.nibbles.packNibbles = 0x9940201014300011;
+          txMsg.nibbles.numNibbles = 16;
           mbus_link_tx_push(&mbusLink, &txMsg);
           USBSERIAL.println("sent no shuttle reply");
+        } else if (rxMsg.parsed.msgType == MSGTYPE_headPowerOn) {
+          // txMsg.nibbles.packNibbles = 0x9BA1002000A2;
+          // txMsg.nibbles.numNibbles = 12;
+          txMsg.nibbles.packNibbles = 0x992020101430009F;
+          //txMsg.nibbles.packNibbles = 0x9C60115754573;
+          txMsg.nibbles.numNibbles = 16;
+          mbus_link_tx_push(&mbusLink, &txMsg);
+          txMsg.nibbles.packNibbles = 0x9F000061;
+          txMsg.nibbles.numNibbles = 8;
+          mbus_link_tx_push(&mbusLink, &txMsg);
+          USBSERIAL.println("sent ??");
         }
       }
       USBSERIAL.println(msgStr);
     }
-
+    //    app_debug_print("aaa\n");
+    //  }{
     /* rn 52 bluetooth */
     rn52_update(&rn52,
                 millis(),
-                (GPIOC_PDIR & PINBIT_RN52_CONNSTAT_EVENT) != 0,
+                (GPIOD_PDIR & PINBIT_RN52_CONNSTAT_EVENT) != 0,
                 &rn52CmdModePin);
     if (rn52CmdModePin) {
-      GPIOC_PSOR = PINBIT_RN52_CMDLO;
+      GPIOA_PSOR = PINBIT_RN52_CMDLO;
     } else {
-      GPIOC_PCOR = PINBIT_RN52_CMDLO;
+      GPIOA_PCOR = PINBIT_RN52_CMDLO;
     }
     
     yield();
@@ -159,7 +175,7 @@ void __assert(const char *, int, const char *)
   while (1) { ; }
 }
 
-void app_debug_print(char *arg)
+void app_debug_print(const char *arg)
 {
   USBSERIAL.println(arg);
 }

@@ -1,5 +1,6 @@
+#include <stdio.h>
 #include "mbus_phy.h"
-#include "stdio.h"
+#include "app_debug.h"
 
 #define MBUS_STATE_RX_DISABLED 0
 #define MBUS_STATE_RX_IDLE 1
@@ -145,6 +146,7 @@ void mbus_phy_update(MbusPhyStruct *pMbusPhy, // inout
                      bool *pDriveMbusPinLo  // output
                      )
 {
+  //  app_debug_print("a\n");  
   _mbus_phy_rx_update(&(pMbusPhy->rx), microSecElapsed, mbusPinHi);
   _mbus_phy_tx_update(&(pMbusPhy->tx), microSecElapsed, pDriveMbusPinLo);
 }

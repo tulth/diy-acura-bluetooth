@@ -8,6 +8,7 @@ void app_debug_printf(const char *format,...)
 {
   va_list args;
   va_start(args, format);
-  snprintf(gPrintfBuf, sizeof(gPrintfBuf), format, args);
+  vsnprintf(gPrintfBuf, sizeof(gPrintfBuf), format, args);
+  va_end(args); 
   app_debug_print(gPrintfBuf);
 }
