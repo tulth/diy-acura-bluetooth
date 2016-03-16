@@ -1,5 +1,6 @@
 #include "rn52.h"
 #include "fifo.h"
+#include "app_debug.h"
 
 bool _rn52_avrcp_cmd_fifo_is_empty(Rn52Struct *pRn52);
 bool _rn52_avrcp_cmd_fifo_is_full(Rn52Struct *pRn52);
@@ -7,12 +8,12 @@ void _rn52_avrcp_cmd_fifo_push(Rn52Struct *pRn52, uint8_t avrcpCmd);
 uint8_t _rn52_avrcp_cmd_fifo_pop(Rn52Struct *pRn52);
 
 void rn52_init(Rn52Struct *pRn52,
-                    int (*pFuncSerialAvailable)(void),
-                    int (*pFuncSerialGetChar)(void),
-                    void (*pFuncSerialPutChar)(uint32_t c),
-                    uint8_t *avrcpCmdFifoMem,
-                    size_t avrcpCmdFifoMemSize
-                    )
+               int (*pFuncSerialAvailable)(void),
+               int (*pFuncSerialGetChar)(void),
+               void (*pFuncSerialPutChar)(uint32_t c),
+               uint8_t *avrcpCmdFifoMem,
+               size_t avrcpCmdFifoMemSize
+               )
 {
   pRn52->state = RN52_STATE_STARTING_UP;
   pRn52->modeCmdNotData = false;
@@ -31,28 +32,28 @@ void rn52_init(Rn52Struct *pRn52,
 }
 
 void _rn52_cmd(Rn52Struct *pRn52,
-                    char *cmd,
-                    unsigned long milliSecElapsed,
-                    uint8_t returnState)
+               char *cmd,
+               unsigned long milliSecElapsed,
+               uint8_t returnState)
 {
   
 }
 
   
 void rn52_update(Rn52Struct *pRn52,
-                      unsigned long milliSecElapsed,
-                      bool eventStatePin,
-                      bool *pCmdPin)
+                 unsigned long milliSecElapsed,
+                 bool eventStatePin,
+                 bool *pCmdPin)
 {
   uint8_t avrcpCmd;
   char *pTxChar;
   int idx;
+  uint8_t entryState = pRn52->state;
   
   if (pRn52->pFuncSerialAvailable()) {
     pRn52->rxStr[pRn52->rxStrLen] = pRn52->pFuncSerialGetChar();
     pRn52->rxStrLen++;
   }
-  
   switch (pRn52->state) {
   case RN52_STATE_STARTING_UP:
     pRn52->state = RN52_STATE_SWITCH_TO_CMD_MODE;
@@ -168,9 +169,9 @@ void rn52_update(Rn52Struct *pRn52,
     }
     break;
   case RN52_STATE_QUERY_CONSTAT:     
-      pRn52->pFuncSerialPutChar('Q');
-      pRn52->pFuncSerialPutChar('\r');
-      pRn52->pFuncSerialPutChar('\n');
+    pRn52->pFuncSerialPutChar('Q');
+    pRn52->pFuncSerialPutChar('\r');
+    pRn52->pFuncSerialPutChar('\n');
     break;
   case RN52_STATE_QUERY_CONSTAT_AWAIT_RESP:
     if (pRn52->rxStrLen >= 6) {
@@ -198,6 +199,9 @@ void rn52_update(Rn52Struct *pRn52,
       pRn52->rxStrLen = 0;
     }
     break;
+  }
+  if (entryState != pRn52->state) {
+    app_debug_printf("rn52_st: %d>%d", entryState, pRn52->state);
   }
 }
 

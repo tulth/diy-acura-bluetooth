@@ -5,6 +5,7 @@
 #include "mbus_phy.h"
 #include "mbus_link.h"
 #include "rn52.h"
+#include "app_debug.h"
 
 #define RN52_AVRCP_CMD_MEM_SIZE 16
 #define BYTE_MEM_SIZE 64
@@ -136,9 +137,6 @@ extern "C" int main(void)
       USBSERIAL.println(msgStr);
     }
 
-    yield();
-  }
-  { /* FIXME */
     /* rn 52 bluetooth */
     rn52_update(&rn52,
                 millis(),
@@ -150,6 +148,7 @@ extern "C" int main(void)
       GPIOC_PCOR = PINBIT_RN52_CMDLO;
     }
     
+    yield();
   }
 }
 
@@ -158,4 +157,9 @@ void __assert(const char *, int, const char *)
 {
   USBSERIAL.println("assert fail! halting!");
   while (1) { ; }
+}
+
+void app_debug_print(char *arg)
+{
+  USBSERIAL.println(arg);
 }

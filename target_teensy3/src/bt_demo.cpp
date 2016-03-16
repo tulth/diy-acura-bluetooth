@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <WProgram.h>
 #include "rn52.h"
+#include "app_debug.h"
 
 #define RN52_AVRCP_CMD_MEM_SIZE 16
 
@@ -110,3 +111,7 @@ void reconnectRn52(void)
   HWSERIAL1.println("B");
 }
 
+void app_debug_print(char *arg)
+{
+  USBSERIAL.println(arg);
+}
