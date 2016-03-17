@@ -1,5 +1,6 @@
+#include <stdio.h>
 #include "mbus_phy.h"
-#include "stdio.h"
+#include "app_debug.h"
 
 #define MBUS_STATE_RX_DISABLED 0
 #define MBUS_STATE_RX_IDLE 1

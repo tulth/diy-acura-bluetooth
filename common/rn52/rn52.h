@@ -52,12 +52,13 @@ typedef struct {
 #define RN52_STATE_DISCONNECT                   3
 #define RN52_STATE_CONNECT                      4
 #define RN52_STATE_SWITCH_TO_CMD_MODE           5
-#define RN52_STATE_SWITCH_TO_CMD_DELAY          6
-#define RN52_STATE_SWITCH_TO_CMD_AWAIT_RESP     7
-#define RN52_STATE_ACTION_CMD                   8
-#define RN52_STATE_ACTION_CMD_AWAIT_RESP        9
-#define RN52_STATE_QUERY_CONSTAT               10
-#define RN52_STATE_QUERY_CONSTAT_AWAIT_RESP    11
+#define RN52_STATE_SWITCH_TO_CMD_DELAY_HI       6
+#define RN52_STATE_SWITCH_TO_CMD_DELAY_LO       7
+#define RN52_STATE_SWITCH_TO_CMD_AWAIT_RESP     8
+#define RN52_STATE_ACTION_CMD                   9
+#define RN52_STATE_ACTION_CMD_AWAIT_RESP       10
+#define RN52_STATE_QUERY_CONSTAT               11
+#define RN52_STATE_QUERY_CONSTAT_AWAIT_RESP    12
 
 #define RN52_AVRCP_CMD_PLAY      1
 #define RN52_AVRCP_CMD_PAUSE     2

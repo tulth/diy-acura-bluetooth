@@ -48,10 +48,12 @@ void rn52_update(Rn52Struct *pRn52,
   uint8_t avrcpCmd;
   char *pTxChar;
   int idx;
+  char rxC;
   uint8_t entryState = pRn52->state;
   
   if (pRn52->pFuncSerialAvailable()) {
-    pRn52->rxStr[pRn52->rxStrLen] = pRn52->pFuncSerialGetChar();
+    rxC = pRn52->pFuncSerialGetChar();
+    pRn52->rxStr[pRn52->rxStrLen] = rxC;
     pRn52->rxStrLen++;
   }
   switch (pRn52->state) {
@@ -71,10 +73,11 @@ void rn52_update(Rn52Struct *pRn52,
     } else {
       strcpy(pRn52->txCmd,"B");
       pRn52->state = RN52_STATE_ACTION_CMD;
-      pRn52->returnState = RN52_STATE_DISCONNECT;
+      pRn52->returnState = RN52_STATE_CONNECT;
     }
     break;
   case RN52_STATE_CONNECT:
+    break;  /* FIXME needs debug */ 
     if (!pRn52->modeCmdNotData) {  /* FIXME: for now force cmd mode */
       pRn52->state = RN52_STATE_SWITCH_TO_CMD_MODE;
       pRn52->returnState = RN52_STATE_CONNECT;
@@ -110,15 +113,23 @@ void rn52_update(Rn52Struct *pRn52,
     }
     break;
   case RN52_STATE_SWITCH_TO_CMD_MODE:
-    *pCmdPin = false;
+    *pCmdPin = true;
     pRn52->milliSecTimeStamp = milliSecElapsed;
-    pRn52->state = RN52_STATE_SWITCH_TO_CMD_DELAY;
+    pRn52->state = RN52_STATE_SWITCH_TO_CMD_DELAY_HI;
     pRn52->rxStrLen = 0;
     break;
-  case RN52_STATE_SWITCH_TO_CMD_DELAY:
+  case RN52_STATE_SWITCH_TO_CMD_DELAY_HI:
+    if ((milliSecElapsed - pRn52->milliSecTimeStamp) > 500) {
+      pRn52->state = RN52_STATE_SWITCH_TO_CMD_DELAY_LO;
+      *pCmdPin = false;
+      pRn52->milliSecTimeStamp = milliSecElapsed;
+      pRn52->rxStrLen = 0;
+    }
+    break;
+  case RN52_STATE_SWITCH_TO_CMD_DELAY_LO:
     if ((milliSecElapsed - pRn52->milliSecTimeStamp) > 100) {
       pRn52->state = RN52_STATE_SWITCH_TO_CMD_AWAIT_RESP;
-      *pCmdPin = true;
+      *pCmdPin = false;
       pRn52->milliSecTimeStamp = milliSecElapsed;
     }
     break;
@@ -141,8 +152,9 @@ void rn52_update(Rn52Struct *pRn52,
     }
     break;
   case RN52_STATE_ACTION_CMD:
+    pRn52->milliSecTimeStamp = milliSecElapsed;
     pTxChar = pRn52->txCmd;
-    while (pTxChar != '\0') {
+    while (*pTxChar != '\0') {
       pRn52->pFuncSerialPutChar(*pTxChar);
       pTxChar++;
     }
@@ -172,6 +184,7 @@ void rn52_update(Rn52Struct *pRn52,
     pRn52->pFuncSerialPutChar('Q');
     pRn52->pFuncSerialPutChar('\r');
     pRn52->pFuncSerialPutChar('\n');
+    pRn52->state = RN52_STATE_QUERY_CONSTAT_AWAIT_RESP;
     break;
   case RN52_STATE_QUERY_CONSTAT_AWAIT_RESP:
     if (pRn52->rxStrLen >= 6) {

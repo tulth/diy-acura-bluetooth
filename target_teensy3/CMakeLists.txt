@@ -29,6 +29,7 @@ SET(CMAKE_CXX_FLAGS "${COMMON_FLAGS} -std=gnu++0x -felide-constructors -fno-exce
 SET(CMAKE_C_FLAGS "${COMMON_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "-Wl,--gc-sections -specs=nano.specs -specs=nosys.specs -T../submodule_teensy_cores/teensy3/mk20dx256.ld ")
 add_definitions(-DUSB_SERIAL -DLAYOUT_US_ENGLISH -DTEENSYDUINO=124 -DF_CPU=48000000 -D__MK20DX256__ )
+add_definitions(-DEMBEDDED )
 
 include_directories("./submodule_teensy_cores/teensy3" "../common" "../common/mbus" "../common/rn52" "./arm_lib/include" )
 
