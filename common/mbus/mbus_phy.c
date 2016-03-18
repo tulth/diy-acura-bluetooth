@@ -9,20 +9,23 @@
 #define MBUS_STATE_RX_NIBBLE_ENDED 4
 #define MBUS_STATE_RX_FAILED_LOW 5
 
-#define MBUS_STATE_TX_DISABLED 0
-#define MBUS_STATE_TX_IDLE 1
-#define MBUS_STATE_TX_SENDING_ONE 2
-#define MBUS_STATE_TX_SENDING_ZERO 3
-#define MBUS_STATE_TX_SEND_BIT_GAP 4
+#define MBUS_STATE_TX_DISABLED         0
+#define MBUS_STATE_TX_ENABLE           1
+#define MBUS_STATE_TX_TURNAROUND_DELAY 2
+#define MBUS_STATE_TX_IDLE             3
+#define MBUS_STATE_TX_SENDING_ONE      4
+#define MBUS_STATE_TX_SENDING_ZERO     5
+#define MBUS_STATE_TX_SEND_BIT_GAP     6
 
 // times in microseconds
-#define BIT_TIME               ( (unsigned long)   3100)
-#define BIT_ZERO_LOW_TIME      ( (unsigned long)   675)
-#define BIT_ONE_LOW_TIME       ( (unsigned long)   1890)
-#define BIT_ONEVAL_THRESH_TIME ( (unsigned long)   (BIT_ZERO_LOW_TIME + BIT_ONE_LOW_TIME) >> 1)
-#define BIT_LOW_TOO_LONG_TIME  ( (unsigned long)   (BIT_TIME + BIT_ONE_LOW_TIME) >> 1)
-#define NIBBLE_END_GAP_TIME    ( (unsigned long)   (BIT_TIME))
-#define INTERBIT_TIMEOUT_TIME  ( (unsigned long)   (BIT_TIME))
+#define BIT_TIME                 ( (unsigned long)   3100)
+#define BIT_ZERO_LOW_TIME        ( (unsigned long)   675)
+#define BIT_ONE_LOW_TIME         ( (unsigned long)   1890)
+#define BIT_ONEVAL_THRESH_TIME   ( (unsigned long)   (BIT_ZERO_LOW_TIME + BIT_ONE_LOW_TIME) >> 1)
+#define BIT_LOW_TOO_LONG_TIME    ( (unsigned long)   (BIT_TIME + BIT_ONE_LOW_TIME) >> 1)
+#define NIBBLE_END_GAP_TIME      ( (unsigned long)   (BIT_TIME))
+#define INTERBIT_TIMEOUT_TIME    ( (unsigned long)   (BIT_TIME))
+#define TX_TURNAROUND_DELAY_TIME ( (unsigned long)   (BIT_TIME))
 
 // private function prototypes! 
 void _mbus_phy_rx_init(MbusPhyTxRxStruct *pMbusPhyRx,
@@ -51,7 +54,7 @@ bool mbus_phy_rx_is_enabled(MbusPhyStruct *pMbusPhy)
 { return (pMbusPhy->rx.state != MBUS_STATE_RX_DISABLED); }  
 
 void mbus_phy_tx_enable(MbusPhyStruct *pMbusPhy)
-{ pMbusPhy->tx.state = MBUS_STATE_TX_IDLE; }
+{ pMbusPhy->tx.state = MBUS_STATE_TX_ENABLE; }
 void mbus_phy_tx_disable(MbusPhyStruct *pMbusPhy)
 { pMbusPhy->tx.state = MBUS_STATE_TX_DISABLED; }
 bool mbus_phy_tx_is_busy(MbusPhyStruct *pMbusPhy)
@@ -283,6 +286,15 @@ void _mbus_phy_tx_update(MbusPhyTxRxStruct *pMbusPhyTx,
   
   switch (pMbusPhyTx->state) {
   case MBUS_STATE_TX_DISABLED:
+    break;
+  case MBUS_STATE_TX_ENABLE:
+    pMbusPhyTx->microSecTimeStamp = microSecElapsed;
+    pMbusPhyTx->state = MBUS_STATE_TX_TURNAROUND_DELAY;
+    break;
+  case MBUS_STATE_TX_TURNAROUND_DELAY:
+    if ((microSecElapsed - pMbusPhyTx->microSecTimeStamp) > TX_TURNAROUND_DELAY_TIME) {
+      pMbusPhyTx->state = MBUS_STATE_TX_IDLE;
+    }
     break;
   case MBUS_STATE_TX_IDLE:
     if (!_mbus_phy_tx_is_empty(pMbusPhyTx)) {
