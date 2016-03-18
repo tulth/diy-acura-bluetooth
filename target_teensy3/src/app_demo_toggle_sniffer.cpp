@@ -113,7 +113,7 @@ extern "C" int main(void)
     if (mbusPhyDirectionUpdated) {
       if (mbus_link_is_direction_rx(&mbusLink)) {
         mbus_phy_tx_disable(&mbusPhy);
-        mbus_phy_rx_enable(&mbusPhy);
+        // mbus_phy_rx_enable(&mbusPhy);
       } else {
         //        mbus_phy_rx_disable(&mbusPhy);
         mbus_phy_tx_enable(&mbusPhy);
@@ -125,6 +125,7 @@ extern "C" int main(void)
       msgStrLen = mbus_link_msgToStr(&rxMsg,
                                      msgStr,
                                      MSG_STR_SIZE);
+      app_debug_printf("rxmsg: %s\n", msgStr);
       if ((!rxMsg.errId) && (rxMsg.parsed.directionH2C)) {
         if (rxMsg.parsed.msgType == MSGTYPE_ping) {
           txMsg.nibbles.packNibbles = 0x982;
@@ -167,7 +168,7 @@ extern "C" int main(void)
     /* toggle sniffer */
     pinVal = (GPIOC_PDIR & PINBIT_MBUS_SENSE) != 0;
     if (pinVal != prevPinVal) {
-      msgStrLen = snprintf(msgStr, MSG_STR_SIZE, "%08x %d", micros(), pinVal);
+      msgStrLen = snprintf(msgStr, MSG_STR_SIZE, "t:%08x %d", micros(), pinVal);
       USBSERIAL.println(msgStr);
       prevPinVal = pinVal;
     }

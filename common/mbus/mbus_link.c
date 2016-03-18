@@ -524,17 +524,16 @@ void _sendPendingTxMsg(MbusLinkStruct *pMbusLink)
   _mbus_link_tx_pop(pMbusLink, &txMsg);
 #ifdef DEBUG_MBUS_LINK
   app_debug_print("linktx: ");
+  for (idx=0; idx<txMsg.nibbles.numNibbles; idx++) {
+    nibble = (txMsg.nibbles.packNibbles >> (4*(txMsg.nibbles.numNibbles - idx - 1))) & 0x0f;
+    app_debug_putchar(mbus_phy_rxnibble2ascii(nibble));
+  app_debug_putchar('\n');
+  }
 #endif /* DEBUG_MBUS_LINK */
   for (idx=0; idx<txMsg.nibbles.numNibbles; idx++) {
     nibble = (txMsg.nibbles.packNibbles >> (4*(txMsg.nibbles.numNibbles - idx - 1))) & 0x0f;
-#ifdef DEBUG_MBUS_LINK
-    app_debug_putchar(mbus_phy_rxnibble2ascii(nibble));
-#endif /* DEBUG_MBUS_LINK */
     fifo_push(pMbusLink->phyTxNibbleFifo, &nibble);
   }
-#ifdef DEBUG_MBUS_LINK
-  app_debug_putchar('\n');
-#endif /* DEBUG_MBUS_LINK */
 }
 
 void mbus_link_rx_push_nibble(MbusLinkStruct *pMbusLink,

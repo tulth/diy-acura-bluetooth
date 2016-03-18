@@ -111,7 +111,7 @@ extern "C" int main(void)
     if (mbusPhyDirectionUpdated) {
       if (mbus_link_is_direction_rx(&mbusLink)) {
         mbus_phy_tx_disable(&mbusPhy);
-        mbus_phy_rx_enable(&mbusPhy);
+        // mbus_phy_rx_enable(&mbusPhy);
       } else {
         //        mbus_phy_rx_disable(&mbusPhy);
         mbus_phy_tx_enable(&mbusPhy);
