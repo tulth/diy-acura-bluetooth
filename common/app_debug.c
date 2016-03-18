@@ -6,17 +6,21 @@
 #endif
 
 
-void app_debug_print(const char *arg)
+void app_debug_putchar(const char arg)
 {
 #ifdef EMBEDDED  
+  usb_serial_putchar(arg);
+#else // NOT EMBEDDED
+  printf("%c", arg);
+#endif
+}
+
+void app_debug_print(const char *arg)
+{
   while (*arg != '\0') {
-    usb_serial_putchar(*arg);
+    app_debug_putchar(*arg);
     arg++;
   }
-  usb_serial_putchar('\n');
-#else // NOT EMBEDDED
-  printf("%s\n", arg);
-#endif
 }
 
 char gPrintfBuf[256];

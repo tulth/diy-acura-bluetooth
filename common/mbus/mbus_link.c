@@ -1,6 +1,7 @@
 #include "mbus_link.h"
 #include "stdio.h"
 #include "mbus_phy.h"
+#include "app_debug.h"
 
 void lengthCheck(MbusRxMsgStruct *pMbusMsgOut, bool lengthOk);
 void doCheckSum(MbusRxMsgStruct *pMbusMsgOut);
@@ -493,6 +494,9 @@ void mbus_link_update(MbusLinkStruct *pMbusLink,
   /* if in rx mode, and tx has something to send and phy rx not busy, switch to tx mode */
   if (pMbusLink->rxNotTxMode) {
     if (!mbusPhyRxBusy && !mbus_link_tx_is_empty(pMbusLink)) {
+#ifdef DEBUG_MBUS_LINK
+      app_debug_print("link txmode\n");
+#endif /* DEBUG_MBUS_LINK */
       pMbusLink->rxNotTxMode = false;
       *phyDirectionUpdated = true;
     }
@@ -501,6 +505,9 @@ void mbus_link_update(MbusLinkStruct *pMbusLink,
     if (!mbusPhyTxBusy && mbus_link_tx_is_empty(pMbusLink)) {
       pMbusLink->rxNotTxMode = true;
       *phyDirectionUpdated = true;
+#ifdef DEBUG_MBUS_LINK
+      app_debug_print("link rxmode\n");
+#endif /* DEBUG_MBUS_LINK */
     } else {
       if (!mbus_link_tx_is_empty(pMbusLink)) {
         _sendPendingTxMsg(pMbusLink);
@@ -515,11 +522,19 @@ void _sendPendingTxMsg(MbusLinkStruct *pMbusLink)
   uint8_t nibble, idx;
   
   _mbus_link_tx_pop(pMbusLink, &txMsg);
-
+#ifdef DEBUG_MBUS_LINK
+  app_debug_print("linktx: ");
+#endif /* DEBUG_MBUS_LINK */
   for (idx=0; idx<txMsg.nibbles.numNibbles; idx++) {
     nibble = (txMsg.nibbles.packNibbles >> (4*(txMsg.nibbles.numNibbles - idx - 1))) & 0x0f;
+#ifdef DEBUG_MBUS_LINK
+    app_debug_putchar(mbus_phy_rxnibble2ascii(nibble));
+#endif /* DEBUG_MBUS_LINK */
     fifo_push(pMbusLink->phyTxNibbleFifo, &nibble);
   }
+#ifdef DEBUG_MBUS_LINK
+  app_debug_putchar('\n');
+#endif /* DEBUG_MBUS_LINK */
 }
 
 void mbus_link_rx_push_nibble(MbusLinkStruct *pMbusLink,
@@ -530,10 +545,22 @@ void mbus_link_rx_push_nibble(MbusLinkStruct *pMbusLink,
   if (pMbusLink->nibbles.numNibbles < NIBBLE_ARRAY_SIZE) {
     pMbusLink->nibbles.numNibbles++;
   }
+#ifdef DEBUG_MBUS_LINK
+  app_debug_print("lrxnib:");
+#endif /* DEBUG_MBUS_LINK */
   if (rxNibble == MBUS_END_MSG_CODE) {
     _mbus_link_rx_msg_push(pMbusLink);
     pMbusLink->nibbles.numNibbles = 0;
+#ifdef DEBUG_MBUS_LINK
+    app_debug_print("end");
+#endif /* DEBUG_MBUS_LINK */
   }
+#ifdef DEBUG_MBUS_LINK
+  else {
+    app_debug_putchar(mbus_phy_rxnibble2ascii(rxNibble));
+  }
+  app_debug_putchar('\n');
+#endif /* DEBUG_MBUS_LINK */
   // printf("leaving mbus_link_rx_update\n");  // COMMENT ME OUT
 }
 

@@ -213,9 +213,11 @@ void rn52_update(Rn52Struct *pRn52,
     }
     break;
   }
+#ifdef DEBUG_RN52
   if (entryState != pRn52->state) {
-    app_debug_printf("rn52_st: %d>%d", entryState, pRn52->state);
+    app_debug_printf("rn52_st: %d>%d\n", entryState, pRn52->state);
   }
+#endif /* DEBUG_RN52 */
 }
 
 void rn52_rx_char(Rn52Struct *pRn52, char newChar)

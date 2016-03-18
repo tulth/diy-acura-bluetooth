@@ -158,6 +158,8 @@ void _mbus_phy_rx_update(MbusPhyTxRxStruct *pMbusPhyRx,
                          unsigned long microSecElapsed,
                          bool mbusPinHi)
 {
+  uint8_t entryState = pMbusPhyRx->state;
+  unsigned long prevTimeStamp = pMbusPhyRx->microSecTimeStamp;
   //printf("state enter: %u, mbusPinHi %d\n", pMbusPhyRx->state, mbusPinHi);
   /* handle bit edges */
   switch (pMbusPhyRx->state) {
@@ -219,14 +221,22 @@ void _mbus_phy_rx_update(MbusPhyTxRxStruct *pMbusPhyRx,
     }
     break;
   case MBUS_STATE_RX_NIBBLE_ENDED:
+    // app_debug_printf("nibend %d\n", microSecElapsed - pMbusPhyRx->microSecTimeStamp);
     if ((microSecElapsed - pMbusPhyRx->microSecTimeStamp) > NIBBLE_END_GAP_TIME) {
       _mbus_phy_rx_push(pMbusPhyRx, MBUS_END_MSG_CODE);
       pMbusPhyRx->state = MBUS_STATE_RX_IDLE;
       pMbusPhyRx->bitShifter = RX_BIT_SHIFTER_INIT;
+      /* if (microSecElapsed & 0x3f < 5) { */
+      /* } */
     }
     break;
   }
   //printf("state leave: %u\n", pMbusPhyRx->state);
+#ifdef DEBUG_MBUS_PHY
+  if (entryState != pMbusPhyRx->state) {
+    app_debug_printf("phyrx: %u>%u, us %lu usTS %lu>%lu mbusHi %u\n", entryState, pMbusPhyRx->state, microSecElapsed, prevTimeStamp, pMbusPhyRx->microSecTimeStamp, mbusPinHi);
+  }
+#endif /* DEBUG_MBUS_PHY */
 }
 
 
@@ -282,7 +292,9 @@ void _mbus_phy_tx_update(MbusPhyTxRxStruct *pMbusPhyTx,
                          bool *pDriveMbusPinLo)
 {
   bool outBitOne;
-  //printf("state enter: %u, microSecElapsed %lu pDriveMbusPinLo %u\n", pMbusPhyTx->state, microSecElapsed, *pDriveMbusPinLo);
+  uint8_t txNibble;
+  uint8_t entryState = pMbusPhyTx->state;
+  // app_debug_printf("state enter: %u, microSecElapsed %lu pDriveMbusPinLo %u\n", pMbusPhyTx->state, microSecElapsed, *pDriveMbusPinLo);
   
   switch (pMbusPhyTx->state) {
   case MBUS_STATE_TX_DISABLED:
@@ -300,7 +312,13 @@ void _mbus_phy_tx_update(MbusPhyTxRxStruct *pMbusPhyTx,
     if (!_mbus_phy_tx_is_empty(pMbusPhyTx)) {
       pMbusPhyTx->microSecTimeStamp = microSecElapsed;
       pMbusPhyTx->bitShifter = TX_BIT_SHIFTER_INIT;
-      pMbusPhyTx->bitShifter |= ((_mbus_phy_tx_pop(pMbusPhyTx) & 0x0F)<<4);
+      txNibble = _mbus_phy_tx_pop(pMbusPhyTx);
+#ifdef DEBUG_MBUS_PHY
+      app_debug_print("phytx:");
+      app_debug_putchar(mbus_phy_rxnibble2ascii(txNibble));
+      app_debug_putchar('\n');
+#endif /* DEBUG_MBUS_PHY */
+      pMbusPhyTx->bitShifter |= ((txNibble & 0x0F)<<4);
       outBitOne = _txShiftOutBit(&(pMbusPhyTx->bitShifter));
       if (outBitOne) {
         pMbusPhyTx->state = MBUS_STATE_TX_SENDING_ONE;
@@ -350,7 +368,9 @@ void _mbus_phy_tx_update(MbusPhyTxRxStruct *pMbusPhyTx,
     }
     break;
   }
-  //printf("state leave: %u, microSecElapsed %lu pDriveMbusPinLo %u\n", pMbusPhyTx->state, microSecElapsed, *pDriveMbusPinLo);
+  /* if (entryState != pMbusPhyTx->state) { */
+  /*   app_debug_printf("phytx: %u, us %lu drvLo %u\n", pMbusPhyTx->state, microSecElapsed, *pDriveMbusPinLo); */
+  /* } */
 }
 
 bool mbus_phy_tx_is_full(MbusPhyStruct *pMbusPhy)

@@ -24,6 +24,7 @@
 extern "C" int main(void)
 {
   elapsedMillis blinkMilliSecElapsed;
+  bool pinVal, prevPinVal;
   uint8_t rxByteMem[BYTE_MEM_SIZE];
   uint8_t txByteMem[BYTE_MEM_SIZE];
   uint8_t rxNibble;
@@ -81,6 +82,7 @@ extern "C" int main(void)
 
   delay(2000);
   app_debug_print("start\n");
+  prevPinVal = 0;
   while (1) {
     /* blink */
     if (blinkMilliSecElapsed > 1000) {
@@ -128,14 +130,12 @@ extern "C" int main(void)
           txMsg.nibbles.packNibbles = 0x982;
           txMsg.nibbles.numNibbles = 3;
           mbus_link_tx_push(&mbusLink, &txMsg);
-          USBSERIAL.println("sent pong");
         } else if (rxMsg.parsed.msgType == MSGTYPE_setPlayState && rxMsg.parsed.body.setPlayState.play) {
           // txMsg.nibbles.packNibbles = 0x9BA1002000A2;
           // txMsg.nibbles.numNibbles = 12;
           txMsg.nibbles.packNibbles = 0x9940201014300011;
           txMsg.nibbles.numNibbles = 16;
           mbus_link_tx_push(&mbusLink, &txMsg);
-          USBSERIAL.println("sent no shuttle reply");
         } else if (rxMsg.parsed.msgType == MSGTYPE_headPowerOn) {
           // txMsg.nibbles.packNibbles = 0x9BA1002000A2;
           // txMsg.nibbles.numNibbles = 12;
@@ -151,7 +151,6 @@ extern "C" int main(void)
           mbus_link_tx_push(&mbusLink, &txMsg);
         }
       }
-      USBSERIAL.println(msgStr);
     }
 
     /* rn 52 bluetooth */
@@ -163,6 +162,14 @@ extern "C" int main(void)
       GPIOA_PSOR = PINBIT_RN52_CMDLO;
     } else {
       GPIOA_PCOR = PINBIT_RN52_CMDLO;
+    }
+
+    /* toggle sniffer */
+    pinVal = (GPIOC_PDIR & PINBIT_MBUS_SENSE) != 0;
+    if (pinVal != prevPinVal) {
+      msgStrLen = snprintf(msgStr, MSG_STR_SIZE, "%08x %d", micros(), pinVal);
+      USBSERIAL.println(msgStr);
+      prevPinVal = pinVal;
     }
     
     yield();

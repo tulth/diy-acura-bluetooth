@@ -4,6 +4,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
+  void app_debug_putchar(const char arg);
   void app_debug_print(const char *arg);
   void app_debug_printf(const char *format,...);
   
