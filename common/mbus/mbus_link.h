@@ -134,29 +134,47 @@ typedef struct {
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
-  extern void mbus_link_init(MbusLinkStruct *pMbusLink,
+  void mbus_link_init(MbusLinkStruct *pMbusLink,
                              MbusRxMsgStruct *rxMsgMemIn,
                              size_t rxMsgMemInSize,
                              MbusTxMsgStruct *txMsgMemIn,
                              size_t txMsgMemInSize,
                              fifo *phyTxNibbleFifo);
-  extern void mbus_link_update(MbusLinkStruct *pMbusLink,
+  void mbus_link_update(MbusLinkStruct *pMbusLink,
                                const bool mbusPhyRxBusy,
                                const bool mbusPhyTxBusy,
                                bool *phyDirectionUpdated);
   /* FIXME add tx capability */
-  extern bool mbus_link_rx_is_empty(MbusLinkStruct *pMbusLink);
-  extern void mbus_link_rx_pop(MbusLinkStruct *pMbusLink, MbusRxMsgStruct *pMbusMsgOut);
-  extern void mbus_link_rx_push_nibble(MbusLinkStruct *pMbusLink,
+  bool mbus_link_rx_is_empty(MbusLinkStruct *pMbusLink);
+  void mbus_link_rx_pop(MbusLinkStruct *pMbusLink, MbusRxMsgStruct *pMbusMsgOut);
+  void mbus_link_rx_push_nibble(MbusLinkStruct *pMbusLink,
                                        const uint8_t rxNibble);
-  extern bool mbus_link_tx_is_empty(MbusLinkStruct *pMbusLink);
-  extern bool mbus_link_tx_is_full(MbusLinkStruct *pMbusLink);
-  extern void mbus_link_tx_push(MbusLinkStruct *pMbusLink, MbusTxMsgStruct *pMbusMsgIn);
-  extern void mbus_link_parseMsg(uint8_t* nibbleSequence, unsigned int numNibbles, MbusRxMsgStruct *pMbusMsgOut);
-  extern int mbus_link_msgToStr(MbusRxMsgStruct *pMbusMsgIn,
+  bool mbus_link_tx_is_empty(MbusLinkStruct *pMbusLink);
+  bool mbus_link_tx_is_full(MbusLinkStruct *pMbusLink);
+  void mbus_link_tx_push(MbusLinkStruct *pMbusLink, MbusTxMsgStruct *pMbusMsgIn);
+  void mbus_link_parseMsg(uint8_t* nibbleSequence, unsigned int numNibbles, MbusRxMsgStruct *pMbusMsgOut);
+  int mbus_link_msgToStr(MbusRxMsgStruct *pMbusMsgIn,
                                 char *strOut,
                                 unsigned int strOutMaxSize);
   static inline bool mbus_link_is_direction_rx(MbusLinkStruct *pMbusLink) { return pMbusLink->rxNotTxMode; }
+
+  void mbus_link_tx_ping(MbusLinkStruct *pMbusLink);
+  void mbus_link_tx_playState(MbusLinkStruct *pMbusLink,
+                                     uint8_t track,
+                                     uint8_t index,
+                                     unsigned int seconds,
+                                     bool playingNotStopped);
+  void mbus_link_tx_changing(MbusLinkStruct *pMbusLink,
+                                    uint8_t disk,
+                                    uint8_t track);
+  void mbus_link_tx_ackWait(MbusLinkStruct *pMbusLink);
+  void mbus_link_tx_diskInfo(MbusLinkStruct *pMbusLink,
+                             uint8_t disk,
+                             uint8_t tracks,
+                             unsigned int seconds);
+  void mbus_link_tx_cdPowerOn(MbusLinkStruct *pMbusLink);
+  void mbus_link_tx_unknownStatus(MbusLinkStruct *pMbusLink);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

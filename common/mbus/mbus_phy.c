@@ -13,9 +13,12 @@
 #define MBUS_STATE_TX_ENABLE           1
 #define MBUS_STATE_TX_TURNAROUND_DELAY 2
 #define MBUS_STATE_TX_IDLE             3
-#define MBUS_STATE_TX_SENDING_ONE      4
-#define MBUS_STATE_TX_SENDING_ZERO     5
-#define MBUS_STATE_TX_SEND_BIT_GAP     6
+#define MBUS_STATE_TX_SENDING          4
+#define MBUS_STATE_TX_SENDING_ONE      5
+#define MBUS_STATE_TX_SENDING_ZERO     6
+#define MBUS_STATE_TX_SEND_BIT_GAP     7
+#define MBUS_STATE_TX_MSG2MSG_GAP      8
+#define MBUS_STATE_TX_MSG2MSG_WAIT     9
 
 // times in microseconds
 #define BIT_TIME                 ( (unsigned long)   3100)
@@ -26,6 +29,7 @@
 #define NIBBLE_END_GAP_TIME      ( (unsigned long)   (BIT_TIME))
 #define INTERBIT_TIMEOUT_TIME    ( (unsigned long)   (BIT_TIME))
 #define TX_TURNAROUND_DELAY_TIME ( (unsigned long)   (BIT_TIME))
+#define TX_MSG2MSG_WAIT          ( (unsigned long)   (BIT_TIME))
 
 // private function prototypes! 
 void _mbus_phy_rx_init(MbusPhyTxRxStruct *pMbusPhyRx,
@@ -123,6 +127,7 @@ void _mbus_phy_rx_init(MbusPhyTxRxStruct *pMbusPhyRx,
                        )
 {
   fifo_nomalloc_init(&(pMbusPhyRx->byteFifo),
+                     "mbusPhyRx",
                      rxByteMemIn,
                      rxByteMemInSize, 1);
   pMbusPhyRx->state = MBUS_STATE_RX_DISABLED;
@@ -136,6 +141,7 @@ void _mbus_phy_tx_init(MbusPhyTxRxStruct *pMbusPhyTx,
                        )
 {
   fifo_nomalloc_init(&(pMbusPhyTx->byteFifo),
+                     "mbusPhyTx",
                      txByteMemIn,
                      txByteMemInSize, 1);
   pMbusPhyTx->state = MBUS_STATE_TX_DISABLED;
@@ -309,28 +315,32 @@ void _mbus_phy_tx_update(MbusPhyTxRxStruct *pMbusPhyTx,
     }
     break;
   case MBUS_STATE_TX_IDLE:
+    *pDriveMbusPinLo = false;
     if (!_mbus_phy_tx_is_empty(pMbusPhyTx)) {
-      pMbusPhyTx->microSecTimeStamp = microSecElapsed;
-      pMbusPhyTx->bitShifter = TX_BIT_SHIFTER_INIT;
       txNibble = _mbus_phy_tx_pop(pMbusPhyTx);
 #ifdef DEBUG_MBUS_PHY
       app_debug_print("phytx:");
       app_debug_putchar(mbus_phy_rxnibble2ascii(txNibble));
       app_debug_putchar('\n');
 #endif /* DEBUG_MBUS_PHY */
-      pMbusPhyTx->bitShifter |= ((txNibble & 0x0F)<<4);
-      outBitOne = _txShiftOutBit(&(pMbusPhyTx->bitShifter));
-      if (outBitOne) {
-        pMbusPhyTx->state = MBUS_STATE_TX_SENDING_ONE;
+      if (txNibble == MBUS_END_MSG_CODE) {
+        pMbusPhyTx->state = MBUS_STATE_TX_MSG2MSG_GAP;
+      } else { // not end of message, its a nibble to send
+        pMbusPhyTx->bitShifter = TX_BIT_SHIFTER_INIT;
+        pMbusPhyTx->bitShifter |= ((txNibble & 0x0F)<<4);
+        pMbusPhyTx->state = MBUS_STATE_TX_SENDING;
       }
-      else {
-        pMbusPhyTx->state = MBUS_STATE_TX_SENDING_ZERO;
-      }
-      *pDriveMbusPinLo = true;
     }
-    else {
-      *pDriveMbusPinLo = false;
+    break;
+  case MBUS_STATE_TX_SENDING:
+    pMbusPhyTx->microSecTimeStamp = microSecElapsed;
+    outBitOne = _txShiftOutBit(&(pMbusPhyTx->bitShifter));
+    if (outBitOne) {
+      pMbusPhyTx->state = MBUS_STATE_TX_SENDING_ONE;
+    } else {
+      pMbusPhyTx->state = MBUS_STATE_TX_SENDING_ZERO;
     }
+    *pDriveMbusPinLo = true;
     break;
   case MBUS_STATE_TX_SENDING_ONE:
     if ((microSecElapsed - pMbusPhyTx->microSecTimeStamp) > BIT_ONE_LOW_TIME) {
@@ -354,17 +364,19 @@ void _mbus_phy_tx_update(MbusPhyTxRxStruct *pMbusPhyTx,
     *pDriveMbusPinLo = false;
     if ((microSecElapsed - pMbusPhyTx->microSecTimeStamp) > BIT_TIME) {
       if (pMbusPhyTx->bitShifter & TX_BIT_SHIFTER_NOT_DONE_MASK) {
-        pMbusPhyTx->microSecTimeStamp = microSecElapsed;
-        outBitOne = _txShiftOutBit(&(pMbusPhyTx->bitShifter));
-        if (outBitOne) {
-          pMbusPhyTx->state = MBUS_STATE_TX_SENDING_ONE;
-        } else {
-          pMbusPhyTx->state = MBUS_STATE_TX_SENDING_ZERO;
-        }
-        *pDriveMbusPinLo = true;
+        pMbusPhyTx->state = MBUS_STATE_TX_SENDING;
       } else {  // done with a nibble
         pMbusPhyTx->state = MBUS_STATE_TX_IDLE;
       }
+    }
+    break;
+  case MBUS_STATE_TX_MSG2MSG_GAP:
+    pMbusPhyTx->state = MBUS_STATE_TX_MSG2MSG_WAIT;
+    pMbusPhyTx->microSecTimeStamp = microSecElapsed;
+    break;
+  case MBUS_STATE_TX_MSG2MSG_WAIT:
+    if ((microSecElapsed - pMbusPhyTx->microSecTimeStamp) > TX_MSG2MSG_WAIT) {
+      pMbusPhyTx->state = MBUS_STATE_TX_IDLE;
     }
     break;
   }

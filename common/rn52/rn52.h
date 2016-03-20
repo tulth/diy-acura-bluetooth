@@ -7,8 +7,10 @@
 
 #define RN52_CMD_TIMEOUT_MILLSEC  500
 
-#define RN52_CONSTAT_A2DP                    (1<<3)
-#define RN52_CONSTAT_TRACKCHANGE             (1<<5)
+#define RN52_CONSTAT_A2DP                    ((1<<2)<<8)
+#define RN52_CONSTAT_TRACKCHANGE             ((1<<5)<<8)
+
+#define RN52_CONSTAT_CONSTATE_AUDIO_STREAMING     13
 
 #define RN52_EXTFEAT_ENA_AVRCP_BUTTONS             (1<<00) /* Enable AVRCP buttons for EK */
 #define RN52_EXTFEAT_ENA_POWERON_RECONNECT         (1<<01) /* Enable reconnect on power-on */
@@ -27,38 +29,27 @@
 #define RN52_EXTFEAT_ENA_AUTOACCEPT_PASSKEY        (1<<14) /* Enable auto-accept passkey in Keyboard I/O Authentication mode */
 
 typedef struct {
-  uint8_t state;
+  int state;
   uint8_t modeCmdNotData;
   uint16_t connectionStatus;
+  uint16_t extFeat;
   uint8_t returnState;
   uint8_t rxStrLen;
   char rxStr[64];
   char txCmd[16];
-  unsigned long milliSecTimeStamp;
+  unsigned long eventLoMilliSecTimeStamp;
+  unsigned long cmd2CmdMilliSecTimeStamp;
+  unsigned long replyMilliSecTimeStamp;
   int (*pFuncSerialAvailable)(void);
   int (*pFuncSerialGetChar)(void);
   void (*pFuncSerialPutChar)(uint32_t c);
   fifo avrcpCmdFifo;
 } Rn52Struct;
 
-#define DEFAULT_EXTFEAT_VALS (RN52_EXTFEAT_DISABLE_SYSTEM_TONES  | \
-                              RN52_EXTFEAT_ENA_POWERON_RECONNECT | \
-                              RN52_EXTFEAT_DISABLE_SYSTEM_TONES)
+/* const uint16_t DEFAULT_EXTFEAT = (RN52_EXTFEAT_DISABLE_SYSTEM_TONES  | */
+/*                                   RN52_EXTFEAT_ENA_POWERON_RECONNECT); */
+const uint16_t DEFAULT_EXTFEAT = (RN52_EXTFEAT_DISABLE_SYSTEM_TONES);
 
-
-/* #define RN52_STATE_DISABLED            1 */
-#define RN52_STATE_STARTING_UP                  1
-#define RN52_STATE_STARTING_UP2                 2
-#define RN52_STATE_DISCONNECT                   3
-#define RN52_STATE_CONNECT                      4
-#define RN52_STATE_SWITCH_TO_CMD_MODE           5
-#define RN52_STATE_SWITCH_TO_CMD_DELAY_HI       6
-#define RN52_STATE_SWITCH_TO_CMD_DELAY_LO       7
-#define RN52_STATE_SWITCH_TO_CMD_AWAIT_RESP     8
-#define RN52_STATE_ACTION_CMD                   9
-#define RN52_STATE_ACTION_CMD_AWAIT_RESP       10
-#define RN52_STATE_QUERY_CONSTAT               11
-#define RN52_STATE_QUERY_CONSTAT_AWAIT_RESP    12
 
 #define RN52_AVRCP_CMD_PLAY      1
 #define RN52_AVRCP_CMD_PAUSE     2

@@ -473,16 +473,22 @@ void mbus_link_init(MbusLinkStruct *pMbusLink,
                     size_t txMsgMemInSize,
                     fifo *phyTxNibbleFifo)
 {
+#ifdef DEBUG_MBUS_LINK
+  app_debug_printf("rxMsgMemInSize %d, sizeof(MbusRxMsgStruct) %d\n", rxMsgMemInSize, sizeof(MbusRxMsgStruct));
+  app_debug_printf("txMsgMemInSize %d, sizeof(MbusTxMsgStruct) %d\n", txMsgMemInSize, sizeof(MbusTxMsgStruct));
+#endif /* DEBUG_MBUS_LINK */
   fifo_nomalloc_init(&(pMbusLink->rxMsgFifo),
+                     "mbusLinkRx",
                      rxMsgMemIn,
                      rxMsgMemInSize,
                      sizeof(MbusRxMsgStruct));
   fifo_nomalloc_init(&(pMbusLink->txMsgFifo),
+                     "mbusLinkTx",
                      txMsgMemIn,
                      txMsgMemInSize,
                      sizeof(MbusTxMsgStruct));
   pMbusLink->rxNotTxMode = true;
-  pMbusLink->phyTxNibbleFifo = phyTxNibbleFifo;  
+  pMbusLink->phyTxNibbleFifo = phyTxNibbleFifo;
 }
 
 void mbus_link_update(MbusLinkStruct *pMbusLink,
@@ -520,20 +526,28 @@ void _sendPendingTxMsg(MbusLinkStruct *pMbusLink)
 {
   MbusTxMsgStruct txMsg;
   uint8_t nibble, idx;
-  
+  uint8_t checkSum = 0;
+
   _mbus_link_tx_pop(pMbusLink, &txMsg);
+  for (idx=0; idx<txMsg.nibbles.numNibbles; idx++) {
+    nibble = (txMsg.nibbles.packNibbles >> (4*(txMsg.nibbles.numNibbles - idx - 1))) & 0x0f;
+    checkSum ^= nibble;
+    fifo_push(pMbusLink->phyTxNibbleFifo, &nibble);
+  }
+  checkSum= (checkSum + 1) % 16;
+  fifo_push(pMbusLink->phyTxNibbleFifo, &checkSum);
+
 #ifdef DEBUG_MBUS_LINK
   app_debug_print("linktx: ");
   for (idx=0; idx<txMsg.nibbles.numNibbles; idx++) {
     nibble = (txMsg.nibbles.packNibbles >> (4*(txMsg.nibbles.numNibbles - idx - 1))) & 0x0f;
     app_debug_putchar(mbus_phy_rxnibble2ascii(nibble));
+  }
+  app_debug_putchar(mbus_phy_rxnibble2ascii(checkSum));
   app_debug_putchar('\n');
-  }
 #endif /* DEBUG_MBUS_LINK */
-  for (idx=0; idx<txMsg.nibbles.numNibbles; idx++) {
-    nibble = (txMsg.nibbles.packNibbles >> (4*(txMsg.nibbles.numNibbles - idx - 1))) & 0x0f;
-    fifo_push(pMbusLink->phyTxNibbleFifo, &nibble);
-  }
+  nibble = MBUS_END_MSG_CODE;
+  fifo_push(pMbusLink->phyTxNibbleFifo, &nibble);
 }
 
 void mbus_link_rx_push_nibble(MbusLinkStruct *pMbusLink,
@@ -613,3 +627,94 @@ void mbus_link_tx_push(MbusLinkStruct *pMbusLink,
 {
   fifo_push(&(pMbusLink->txMsgFifo), pMbusMsgIn);
 }
+
+uint8_t toBcdNibbles(uint8_t arg)
+{
+  return ((arg / 10)<<4) | (arg % 10);
+}
+
+uint16_t toMinSecNibbles(unsigned int seconds)
+{
+  unsigned int minutes = seconds / 60;
+  unsigned int remaningSeconds = seconds % 60;
+  return ((toBcdNibbles(minutes) << 8) |
+          (toBcdNibbles(remaningSeconds)));
+}
+
+
+static MbusTxMsgStruct gTxMsg;
+
+void mbus_link_tx_ping(MbusLinkStruct *pMbusLink)
+{
+  gTxMsg.nibbles.packNibbles = 0x98;
+  gTxMsg.nibbles.numNibbles = 2;
+  mbus_link_tx_push(pMbusLink, &gTxMsg);
+}
+
+void mbus_link_tx_playState(MbusLinkStruct *pMbusLink,
+                            uint8_t track,
+                            uint8_t index,
+                            unsigned int seconds,
+                            bool playingNotStopped)
+{
+  if (playingNotStopped) {
+    gTxMsg.nibbles.packNibbles = 0x994000000000001;
+    gTxMsg.nibbles.packNibbles |= ((uint64_t)toBcdNibbles(track+1) << 40  |
+                                   (uint64_t)toBcdNibbles(index) << 32 |
+                                   toMinSecNibbles(seconds) << 16
+                                   );
+  } else {
+    gTxMsg.nibbles.packNibbles = 0x99200000000000A;
+  }
+  gTxMsg.nibbles.numNibbles = 15;
+  mbus_link_tx_push(pMbusLink, &gTxMsg);
+}
+
+void mbus_link_tx_changing(MbusLinkStruct *pMbusLink,
+                           uint8_t disk,
+                           uint8_t track)
+{
+  gTxMsg.nibbles.packNibbles = (0x9B900000001 |
+                                (disk << 28) |
+                                toBcdNibbles(track+1) << 20
+                                );
+  gTxMsg.nibbles.numNibbles = 11;
+  mbus_link_tx_push(pMbusLink, &gTxMsg);
+}
+
+void mbus_link_tx_ackWait(MbusLinkStruct *pMbusLink)
+{
+  gTxMsg.nibbles.packNibbles = 0x9F00000;
+  gTxMsg.nibbles.numNibbles = 7;
+  mbus_link_tx_push(pMbusLink, &gTxMsg);
+}
+
+void mbus_link_tx_diskInfo(MbusLinkStruct *pMbusLink,
+                           uint8_t disk,
+                           uint8_t numTracks,
+                           unsigned int seconds)
+{
+  gTxMsg.nibbles.packNibbles = (0x9C001007502F |
+                                ((uint64_t)disk << 36) |
+                                toBcdNibbles(numTracks) << 20 |
+                                toMinSecNibbles(seconds) << 4
+                                );
+  gTxMsg.nibbles.numNibbles = 12;
+  mbus_link_tx_push(pMbusLink, &gTxMsg);
+}
+
+void mbus_link_tx_cdPowerOn(MbusLinkStruct *pMbusLink)
+{
+  gTxMsg.nibbles.packNibbles = 0x9A0000000000;
+  gTxMsg.nibbles.numNibbles = 12;
+  mbus_link_tx_push(pMbusLink, &gTxMsg);
+}
+
+void mbus_link_tx_unknownStatus(MbusLinkStruct *pMbusLink)
+{
+  gTxMsg.nibbles.packNibbles = 0x9D00000000;
+  gTxMsg.nibbles.numNibbles = 10;
+  mbus_link_tx_push(pMbusLink, &gTxMsg);
+}
+
+

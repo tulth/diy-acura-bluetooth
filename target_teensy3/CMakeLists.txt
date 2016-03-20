@@ -32,7 +32,7 @@ add_definitions(-DUSB_SERIAL -DLAYOUT_US_ENGLISH -DTEENSYDUINO=124 -DF_CPU=48000
 add_definitions(-DEMBEDDED )
 # add_definitions( -DDEBUG_MBUS_PHY )
 # add_definitions( -DDEBUG_MBUS_LINK )
-# add_definitions( -DDEBUG_RN52 )
+add_definitions( -DDEBUG_RN52 )
 
 include_directories("./submodule_teensy_cores/teensy3" "../common" "../common/mbus" "../common/rn52" "./arm_lib/include" )
 

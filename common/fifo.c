@@ -1,46 +1,72 @@
-#include "fifo.h"
 #include <assert.h>
+#include <stdint.h>
+#include "fifo.h"
+#include "app_debug.h"
 
-void fifo_malloc_init(fifo *cb, size_t capacity, size_t elementSize)
+void fifo_malloc_init(fifo *cb, const char *id, size_t capacity, size_t elementSize)
 {
-    cb->buffer = malloc(capacity * elementSize);
-    assert(cb->buffer != NULL);
-    cb->bufferEnd = (char *)cb->buffer + capacity * elementSize;
-    cb->capacity = capacity;
-    cb->count = 0;
-    cb->elementSize = elementSize;
-    cb->head = cb->buffer;
-    cb->tail = cb->buffer;
+  char *pIdIn = (char*) id;
+  char *pIdOut = (char*) cb->id;
+  while (*pIdIn != '\0') {
+    *pIdOut = *pIdIn;
+    pIdIn++;
+    pIdOut++;
+  }
+  *pIdOut = '\0';
+  cb->buffer = malloc(capacity * elementSize);
+  assert(cb->buffer != NULL);
+  cb->bufferEnd = (char *)cb->buffer + capacity * elementSize;
+  cb->capacity = capacity;
+  cb->count = 0;
+  cb->elementSize = elementSize;
+  cb->head = cb->buffer;
+  cb->tail = cb->buffer;
 }
 
 void fifo_malloc_free(fifo *cb)
 {
-    free(cb->buffer);
+  free(cb->buffer);
 }
 
-void fifo_nomalloc_init(fifo *cb, void *buf, size_t bufSize, size_t elementSize)
+void fifo_nomalloc_init(fifo *cb, const char *id, void *buf, size_t bufSize, size_t elementSize)
 {
-    cb->buffer = buf;
-    assert(cb->buffer != NULL);
-    cb->capacity = bufSize / elementSize;
-    cb->bufferEnd = (char *)cb->buffer + cb->capacity * elementSize;
-    cb->count = 0;
-    cb->elementSize = elementSize;
-    cb->head = cb->buffer;
-    cb->tail = cb->buffer;
+  char *pIdIn = (char*) id;
+  char *pIdOut = (char*) cb->id;
+  while (*pIdIn != '\0') {
+    *pIdOut = *pIdIn;
+    pIdIn++;
+    pIdOut++;
+  }
+  *pIdOut = '\0';
+  
+  cb->buffer = buf;
+  assert(cb->buffer != NULL);
+  cb->capacity = bufSize / elementSize;
+  cb->bufferEnd = (char *)cb->buffer + cb->capacity * elementSize;
+  cb->count = 0;
+  cb->elementSize = elementSize;
+  cb->head = cb->buffer;
+  cb->tail = cb->buffer;
 }
 
 void fifo_reset(fifo *cb)
 {
-    cb->count = 0;
-    cb->head = cb->buffer;
-    cb->tail = cb->buffer;
+  cb->count = 0;
+  cb->head = cb->buffer;
+  cb->tail = cb->buffer;
 }
 
 
 void fifo_push(fifo *cb, const void *item)
 {
-  assert(cb->count < cb->capacity);
+  if (cb->count >= cb->capacity) {
+    app_debug_printf("fifo_push: %s overflow capacity:%d!\n", cb->id, cb->capacity);
+    return;
+  }
+  /* if (cb->capacity == 256) { */
+  /*   app_debug_printf("fifo_push: count: %d item:%x\n", cb->count, *((uint8_t*)(item))); */
+  /* } */
+                          
   memcpy(cb->head, item, cb->elementSize);
   cb->head = (char*)cb->head + cb->elementSize;
   if(cb->head == cb->bufferEnd) {
@@ -51,6 +77,10 @@ void fifo_push(fifo *cb, const void *item)
 
 void fifo_pop(fifo *cb, void *item)
 {
+  if (cb->count <= 0) {
+    app_debug_printf("fifo_pop: %s underflow!\n", cb->id);
+  }
+
   assert(cb->count > 0);
   memcpy(item, cb->tail, cb->elementSize);
   cb->tail = (char*)cb->tail + cb->elementSize;
