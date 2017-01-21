@@ -9,3 +9,4 @@ install_manifest.txt
 *.nogit
 __pycache__
 .#*
+*.bak

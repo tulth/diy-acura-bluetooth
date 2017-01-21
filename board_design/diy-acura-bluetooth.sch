@@ -249,7 +249,7 @@ Wire Wire Line
 Wire Wire Line
 	6900 1800 5500 1800
 Wire Wire Line
-	6900 1700 5500 1700
+	5500 1700 6900 1700
 $Comp
 L CONN_01X03 P2
 U 1 1 56F26C55
@@ -290,4 +290,58 @@ Wire Wire Line
 	6300 1000 6200 1000
 Wire Wire Line
 	6200 1000 6200 1100
+Text Label 2200 1700 0    60   ~ 0
+SPK_L
+Text Label 2300 1900 0    60   ~ 0
+SPK_R
+Text Label 1800 3400 0    60   ~ 0
+ACC
+Text Label 1800 3500 0    60   ~ 0
+BATT
+Text Label 1800 3300 0    60   ~ 0
+BUS
+Text Label 3650 1600 0    60   ~ 0
+SPK_R_P
+Text Label 3650 1700 0    60   ~ 0
+SPK_R_N
+Text Label 3650 1800 0    60   ~ 0
+SPK_L_P
+Text Label 3650 1900 0    60   ~ 0
+SPK_L_N
+Text Label 5750 3300 0    60   ~ 0
+mbusSense
+Text Label 5750 3400 0    60   ~ 0
+driveMbusLo
+Text Label 4550 4300 0    60   ~ 0
+holdPowerOn
+Text Label 4550 4400 0    60   ~ 0
+accSense
+$Comp
+L +3.3V #PWR05
+U 1 1 57047CF7
+P 6350 1600
+F 0 "#PWR05" H 6350 1450 50  0001 C CNN
+F 1 "+3.3V" H 6350 1740 50  0000 C CNN
+F 2 "" H 6350 1600 50  0000 C CNN
+F 3 "" H 6350 1600 50  0000 C CNN
+	1    6350 1600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6350 1600 6350 1700
+Connection ~ 6350 1700
+Text Label 5950 1800 0    60   ~ 0
+rn52PwrEn
+Text Label 6050 2000 0    60   ~ 0
+rn52Tx
+Text Label 6050 2100 0    60   ~ 0
+rn52Rx
+Text Label 6050 2200 0    60   ~ 0
+rn52Rts
+Text Label 6050 2300 0    60   ~ 0
+rn52Cts
+Text Label 6050 2450 0    60   ~ 0
+rn52CmdLo
+Text Label 5800 2550 0    60   ~ 0
+rn52ConnStatEvent
 $EndSCHEMATC
