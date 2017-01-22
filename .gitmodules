@@ -1,3 +1,6 @@
 [submodule "target_teensy3/submodule_teensy_cores"]
 	path = target_teensy3/submodule_teensy_cores
 	url = https://github.com/PaulStoffregen/cores.git
+[submodule "cca/kicad_common"]
+	path = cca/kicad_common
+	url = git@github.com:tulth/kicad_common.git
