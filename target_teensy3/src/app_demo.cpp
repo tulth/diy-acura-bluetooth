@@ -171,13 +171,13 @@ extern "C" int main(void)
 
   app_init(&app);
 
-  app_debug_print("start\n");
+  app_debug_print("start\r\n");
   while (1) {
     /* blink */
     if (blinkMilliSecElapsed > 5000) {
       GPIOC_PTOR = PINBIT_LED;  /* gpio toggle reg, for led bit */
       blinkMilliSecElapsed = 0;
-      //      app_debug_print("beep\n");
+      //      app_debug_print("beep\r\n");
     }
 
     /* mbusPhy */
@@ -382,7 +382,7 @@ void __assert(const char *, int, const char *)
 
 void _app_push_simple_mbus_msg(appStruct *app, appMbusSimpleRxMsgType simpleMbusMsg)
 {
-  app_debug_printf("queuing %d\n", simpleMbusMsg);
+  app_debug_printf("queuing %d\r\n", simpleMbusMsg);
   if (!fifo_is_full(&(app->simpleMbusMsgFifo))) {
     fifo_push(&(app->simpleMbusMsgFifo), &simpleMbusMsg);
   }
@@ -397,14 +397,14 @@ void app_decode_push_mbus_msg(appStruct *pApp, MbusRxMsgStruct *pRxMsg)
   if (!pRxMsg->parsed.directionH2C) {
     return;
   }
-  app_debug_printf("pRxMsg->parsed.msgType: %02x\n", pRxMsg->parsed.msgType);
+  app_debug_printf("pRxMsg->parsed.msgType: %02x\r\n", pRxMsg->parsed.msgType);
   switch (pRxMsg->parsed.msgType) {
   case MSGTYPE_ping:
     _app_push_simple_mbus_msg(pApp, ping);
     break;
   case MSGTYPE_setPlayState:
     if(pRxMsg->parsed.body.setPlayState.stop) {
-      app_debug_print("queueing a stop\n");
+      app_debug_print("queueing a stop\r\n");
       _app_push_simple_mbus_msg(pApp, stop);
     }
     if(pRxMsg->parsed.body.setPlayState.pause) {
@@ -420,18 +420,18 @@ void app_decode_push_mbus_msg(appStruct *pApp, MbusRxMsgStruct *pRxMsg)
                                 (appMbusSimpleRxMsgType) ((switchDisk1 - 1) + pRxMsg->parsed.body.setDiskTrack.disk));
     } else {
       int trackOffset = (pApp->track - (pRxMsg->parsed.body.setDiskTrack.track - 1)) % pApp->numTracks;
-      app_debug_printf("trackOffset: %d\n", trackOffset);
+      app_debug_printf("trackOffset: %d\r\n", trackOffset);
       if (trackOffset < 0) {
         trackOffset += pApp->numTracks;
       }
-      app_debug_printf("trackOffset: %d\n", trackOffset);
+      app_debug_printf("trackOffset: %d\r\n", trackOffset);
       if (trackOffset > (pApp->numTracks>>1)) {
         _app_push_simple_mbus_msg(pApp, next);
         pApp->track++;
         if (pApp->track >= pApp->numTracks) {
           pApp->track = 0;
         }
-        app_debug_print("next\n");
+        app_debug_print("next\r\n");
       } else {
         _app_push_simple_mbus_msg(pApp, prev);
         if (trackOffset != 0) {
@@ -441,7 +441,7 @@ void app_decode_push_mbus_msg(appStruct *pApp, MbusRxMsgStruct *pRxMsg)
             pApp->track--;
           }
         }
-        app_debug_print("prev\n");
+        app_debug_print("prev\r\n");
       }
     }
     break;
@@ -472,7 +472,7 @@ void app_init(appStruct *pApp)
 
 char gMsgStr[MSG_STR_SIZE];
 
-#define changeState(arg) do { app_debug_printf("appState: %s\n", #arg ); pApp->state = arg; } while (0)
+#define changeState(arg) do { app_debug_printf("appState: %s\r\n", #arg ); pApp->state = arg; } while (0)
 
 void app_update(appStruct *pApp)
 {
@@ -485,14 +485,14 @@ void app_update(appStruct *pApp)
     mbus_link_msgToStr(&rxMsg,
                        gMsgStr,
                        MSG_STR_SIZE);
-    app_debug_printf("rxmsg: %s\n", gMsgStr);
+    app_debug_printf("rxmsg: %s\r\n", gMsgStr);
     app_decode_push_mbus_msg(pApp, &rxMsg);
   }
 
   gotRxMsg = false;
   if (!fifo_is_empty(&(pApp->simpleMbusMsgFifo))) {
     fifo_pop(&(pApp->simpleMbusMsgFifo), &simpleMbusMsg);
-    app_debug_printf("simpleMbusMsg: %s\n", simpleMbusMsg2Str(simpleMbusMsg));
+    app_debug_printf("simpleMbusMsg: %s\r\n", simpleMbusMsg2Str(simpleMbusMsg));
     if (simpleMbusMsg == ping) {
       mbus_link_tx_ping(&pApp->link);
     } else if (simpleMbusMsg == next) {

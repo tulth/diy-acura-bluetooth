@@ -141,7 +141,7 @@ void rn52_update(Rn52Struct *pRn52,
     break;
   case CHECK_EXTFEAT:
     if (pRn52->extFeat != DEFAULT_EXTFEAT) {
-      app_debug_printf("mismatch extfeat! DEFAULT_EXTFEAT:0x%04X extFeat:0x%04X\n",
+      app_debug_printf("mismatch extfeat! DEFAULT_EXTFEAT:0x%04X extFeat:0x%04X\r\n",
                        DEFAULT_EXTFEAT, pRn52->extFeat);
       //      pRn52->state = RUNNING;
       pRn52->state = SET_EXTFEAT;
@@ -231,7 +231,7 @@ void rn52_update(Rn52Struct *pRn52,
     pRn52->replyMilliSecTimeStamp = milliSecElapsed;
     pTxChar = pRn52->txCmd;
 #ifdef DEBUG_RN52
-    app_debug_printf("rn52tx:%s\n", pRn52->txCmd);
+    app_debug_printf("rn52tx:%s\r\n", pRn52->txCmd);
 #endif /* DEBUG_RN52 */
     while (*pTxChar != '\0') {
       pRn52->pFuncSerialPutChar(*pTxChar);
@@ -262,7 +262,7 @@ void rn52_update(Rn52Struct *pRn52,
   case QUERY_CONSTAT:
     pRn52->replyMilliSecTimeStamp = milliSecElapsed;
 #ifdef DEBUG_RN52
-    app_debug_printf("rn52tx:Q\n", pRn52->txCmd);
+    app_debug_printf("rn52tx:Q\r\n", pRn52->txCmd);
 #endif /* DEBUG_RN52 */
     pRn52->pFuncSerialPutChar('Q');
     pRn52->pFuncSerialPutChar('\r');
@@ -276,6 +276,7 @@ void rn52_update(Rn52Struct *pRn52,
       for (idx = 0; idx < pRn52->rxStrLen-1; idx++) {
         app_debug_putchar(pRn52->rxStr[idx]);
       }
+      app_debug_putchar('\r');
       app_debug_putchar('\n');
 #endif /* DEBUG_RN52 */
       if (pRn52->rxStrLen == 6) {
@@ -286,7 +287,7 @@ void rn52_update(Rn52Struct *pRn52,
           pRn52->connectionStatus |= hexChar2Nibble(pRn52->rxStr[idx]);
         }
 #ifdef DEBUG_RN52
-        app_debug_printf("rn52conStat:0x%04X\n", pRn52->connectionStatus);
+        app_debug_printf("rn52conStat:0x%04X\r\n", pRn52->connectionStatus);
 #endif /* DEBUG_RN52 */
         pRn52->rxStrLen = 0;
         pRn52->state = pRn52->returnState;
@@ -295,7 +296,7 @@ void rn52_update(Rn52Struct *pRn52,
         pRn52->state = QUERY_CONSTAT;
         pRn52->rxStrLen = 0;
 #ifdef DEBUG_RN52
-        app_debug_printf("rn52conStat:bad response\n", pRn52->connectionStatus);
+        app_debug_printf("rn52conStat:bad response\r\n", pRn52->connectionStatus);
 #endif /* DEBUG_RN52 */
       }
     } else if ((milliSecElapsed - pRn52->replyMilliSecTimeStamp) > RN52_CMD_TIMEOUT_MILLSEC) {
@@ -303,14 +304,14 @@ void rn52_update(Rn52Struct *pRn52,
       pRn52->state = QUERY_CONSTAT;
       pRn52->rxStrLen = 0;
 #ifdef DEBUG_RN52
-      app_debug_printf("rn52conStat:timeout\n", pRn52->connectionStatus);
+      app_debug_printf("rn52conStat:timeout\r\n", pRn52->connectionStatus);
 #endif /* DEBUG_RN52 */
     }
     break;
   case QUERY_EXTFEAT:
     pRn52->replyMilliSecTimeStamp = milliSecElapsed;
 #ifdef DEBUG_RN52
-    app_debug_printf("rn52tx:G%\n", pRn52->txCmd);
+    app_debug_printf("rn52tx:G%\r\n", pRn52->txCmd);
 #endif /* DEBUG_RN52 */
     pRn52->pFuncSerialPutChar('G');
     pRn52->pFuncSerialPutChar('%');
@@ -325,6 +326,7 @@ void rn52_update(Rn52Struct *pRn52,
       for (idx = 0; idx < pRn52->rxStrLen-1; idx++) {
         app_debug_putchar(pRn52->rxStr[idx]);
       }
+      app_debug_putchar('\r');
       app_debug_putchar('\n');
 #endif /* DEBUG_RN52 */
       if (pRn52->rxStrLen == 6) {
@@ -335,7 +337,7 @@ void rn52_update(Rn52Struct *pRn52,
           pRn52->extFeat |= hexChar2Nibble(pRn52->rxStr[idx]);
         }
 #ifdef DEBUG_RN52
-        app_debug_printf("rn52extFeat:0x%04X\n", pRn52->extFeat);
+        app_debug_printf("rn52extFeat:0x%04X\r\n", pRn52->extFeat);
 #endif /* DEBUG_RN52 */
         pRn52->rxStrLen = 0;
         pRn52->state = pRn52->returnState;
@@ -353,7 +355,7 @@ void rn52_update(Rn52Struct *pRn52,
   }
 #ifdef DEBUG_RN52
   if (entryState != pRn52->state) {
-    app_debug_printf("rn52_st: %d>%d\n", entryState, pRn52->state);
+    app_debug_printf("rn52_st: %d>%d\r\n", entryState, pRn52->state);
   }
 #endif /* DEBUG_RN52 */
 }
@@ -431,7 +433,12 @@ bool rn52_avrcp_is_playing(Rn52Struct *pRn52)
   bool connectedA2dp = pRn52->connectionStatus & RN52_CONSTAT_A2DP;
   bool audioStreaming = (pRn52->connectionStatus & 0x000F) == RN52_CONSTAT_CONSTATE_AUDIO_STREAMING;
 /* #ifdef DEBUG_RN52 */
-/*   app_debug_printf("rn52conStat:0x%04X connected %d audiostrm %d\n", pRn52->connectionStatus, connectedA2dp, audioStreaming); */
+/*   app_debug_printf("rn52conStat:0x%04X connected %d audiostrm %d\r\n", pRn52->connectionStatus, connectedA2dp, audioStreaming); */
 /* #endif /\* DEBUG_RN52 *\/ */
-  return connectedA2dp && audioStreaming;
+
+  // phone seems to toggle ad2p very frequently, for example for pauses
+  // the audio system pops when this happens - it is unclear why this happens
+  // so just always say its streaming while on to avoid pops
+  // return connectedA2dp && audioStreaming;
+  return true;
 }

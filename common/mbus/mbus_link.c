@@ -664,7 +664,7 @@ void mbus_link_tx_playState(MbusLinkStruct *pMbusLink,
                                    toMinSecNibbles(seconds) << 16
                                    );
   } else {
-    gTxMsg.nibbles.packNibbles = 0x99200000000000A;
+    gTxMsg.nibbles.packNibbles = 0x992000000000009;
   }
   gTxMsg.nibbles.numNibbles = 15;
   mbus_link_tx_push(pMbusLink, &gTxMsg);
