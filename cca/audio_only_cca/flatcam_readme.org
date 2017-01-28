@@ -1,0 +1,228 @@
+* Kicad Export
+*Set zones to 32 segments per 360 degrees*
+*set zone clearance to 0.53 mm!*
+
+* Coordinates
+NOTE, unless otherwise specificed, coordinates are in millimeters (mm)
+Calculating offset vector...
+
+botLeft = (-177.2, -185.3) on the nomad 883 machine setup
+
+I need to miror the board, and I mirror about X.
+This means the bot left corner ends up at (25.4, 25.4).
+So a total offset translation of (-202.6, -210.7) is needed.
+
+* Exporting drill holes
+** 1.0 mm holes 
+open audio_only.drl in flatcam.
+select audio_only.drl in flatcam.
+
+Click menu Tool=>DoubleSided PCB Tool
+mirror axis: X
+axis location: point
+point/box: (0, 0)
+alignment holes: blank
+drill diam: blank
+click mirror object
+
+*Pick BOTH tools with diameter 1.0, this is for plated and nonplated entries!!!!!*
+
+Pick selected tab
+scroll down to offset
+(offset) vector: (-202.6, -210.7)
+click offset
+
+Under create cnc job:
+cut z: -2.5
+travel z: 40
+feed rate: 15
+tool change: leave unchecked
+spindle speed: 10000
+click generate
+
+click project tab
+select audio_only.drl_cnc
+Pick selected tab
+click export gcode
+In folder fab_outputs.nogit, save as audio_only_1p0mm_drill.gcode
+
+click project tab
+delete all entries before proceeding to the next step
+
+open in emacs,
+  find-file fab_outputs.nogit/audio_only_1p0mm_drill.gcode
+find and replace 
+G00 Z40.0000
+with
+G00 Z2.0000
+
+Then change the last 
+G00 Z2.0000
+back to 
+G00 Z40.0000
+
+copy it over
+  cp ./fab_outputs.nogit/audio_only_1p0mm_drill.gcode  ~/ext/gcode
+done!
+
+** 0.8 mm holes 
+open audio_only.drl in flatcam.
+select audio_only.drl in flatcam.
+*Pick tool with diameter 0.8*
+
+Pick selected tab
+scroll down to offset
+(offset) vector: (-202.6, -210.7)
+click offset
+
+Under create cnc job:
+cut z: -2.5
+travel z: 40
+tool change: leave unchecked
+feed rate: 15
+spindle speed: 10000
+click generate
+
+click project tab
+select audio_only.drl_cnc
+Pick selected tab
+click export gcode
+In folder fab_outputs.nogit, save as audio_only_0p8mm_drill.gcode
+
+click project tab
+delete all entries before proceeding to the next step
+
+open in emacs,
+  find-file fab_outputs.nogit/audio_only_0p8mm_drill.gcode
+find and replace 
+G00 Z40.0000
+with
+G00 Z2.0000
+
+Then change the last 
+G00 Z2.0000
+back to 
+G00 Z40.0000
+
+copy it over
+  cp ./fab_outputs.nogit/audio_only_0p8mm_drill.gcode  ~/ext/gcode
+done!
+
+** 1.1 mm holes 
+open audio_only.drl in flatcam.
+select audio_only.drl in flatcam.
+*Pick tool with diameter 1.1*
+
+Pick selected tab
+scroll down to offset
+(offset) vector: (-202.6, -210.7)
+click offset
+
+Under create cnc job:
+cut z: -2.5
+travel z: 40
+tool change: leave unchecked
+feed rate: 15
+spindle speed: 10000
+click generate
+
+click project tab
+select audio_only.drl_cnc
+Pick selected tab
+click export gcode
+In folder fab_outputs.nogit, save as audio_only_1p1mm_drill.gcode
+
+click project tab
+delete all entries before proceeding to the next step
+
+open in emacs,
+  find-file fab_outputs.nogit/audio_only_1p1mm_drill.gcode
+find and replace 
+G00 Z40.0000
+with
+G00 Z2.0000
+
+Then change the last 
+G00 Z2.0000
+back to 
+G00 Z40.0000
+
+copy it over
+  cp ./fab_outputs.nogit/audio_only_1p1mm_drill.gcode  ~/ext/gcode
+done!
+
+* Exporting isolation routing
+** Back isolation routing (this worked)
+open audio_only-B.Cu.gbr in flatcam.
+select audio_only-B.Cu.gbr in flatcam.
+
+Click menu Tool=>DoubleSided PCB Tool
+mirror axis: X
+axis location: point
+point/box: (0, 0)
+alignment holes: blank
+drill diam: blank
+click mirror object
+
+
+Pick selected tab
+scroll down to offset
+(offset) vector: (-202.6, -210.7)
+click offset
+
+Under isolation routing:
+tool dia: 0.5
+Width (# passes): 1
+pass overlap: Doesn't matter
+combine passes: checked
+click generate geometry
+
+click project tab
+select audio_only-B.Cu.gbr_iso
+Pick selected tab
+cut z: -0.15
+travel z: 1
+feed rate: 40
+tool dia: 0.5
+spindle speed: 10000
+multi-depth: leave unchecked
+click generate
+
+click project tab
+select audio_only-B.Cu.gbr_iso_cnc
+Pick selected tab
+click export gcode
+In folder fab_outputs.nogit, save as audio_only_isolation_kodiak_0p5_mill.gcode
+
+Close flatcam
+
+open in emacs,
+  find-file fab_outputs.nogit/audio_only_isolation_kodiak_0p5_mill.gcode
+find and replace 
+G01 Z-0.1500
+with the following 2 lines
+G00 Z0.50000
+G01 Z-0.1500
+
+find and replace
+G00 Z1.0000
+with
+G00 Z40.0000
+
+save it as
+audio_only_isolation_kodiak_0p5_mill_mod.gcode
+
+open in bCNC
+  ~/ext/bCNC/bCNC ./fab_outputs.nogit/audio_only_isolation_kodiak_0p5_mill_mod.gcode
+select editor tab
+highlight board outline and delete
+Save.
+Look it over for any other issues
+
+Done inspecting?
+close bCNC
+
+copy it over
+  cp ./fab_outputs.nogit/audio_only_isolation_kodiak_0p5_mill_mod.gcode  ~/ext/gcode
+done!
+
