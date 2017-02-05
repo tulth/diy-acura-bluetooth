@@ -4,7 +4,7 @@
 #include <core_pins.h>
 #include "mbus_phy.h"
 #include "mbus_link.h"
-
+#include "app_debug.h"
 #define BYTE_MEM_SIZE 64
 
 #define PINBIT_LED (1<<5)
@@ -18,7 +18,14 @@ extern "C" int main(void)
   elapsedMillis blinkMilliSecElapsed;
   uint8_t rxByteMem[BYTE_MEM_SIZE];
   uint8_t txByteMem[BYTE_MEM_SIZE];
+  char txCharMem[32];
   uint8_t rxNibble;
+  char txChar;
+  uint8_t txNib;
+  uint8_t txNibQueue[32];
+  int txNibQueueIdx;
+  bool transmitting = false;
+  int txNibQueueLastIdx = 0;
   MbusPhyStruct phy;
   bool driveMbusPinLo = false;
 
@@ -62,9 +69,47 @@ extern "C" int main(void)
 
     if (!mbus_phy_rx_is_empty(&phy)) {
       rxNibble = mbus_phy_rx_pop(&phy);
-      USBSERIAL.write(mbus_phy_rxnibble2ascii(rxNibble));
+      if (rxNibble == MBUS_END_MSG_CODE) {
+        app_debug_putchar('\r');
+        app_debug_putchar('\n');
+      } else {
+        app_debug_putchar(mbus_phy_rxnibble2ascii(rxNibble));
+      }        
     }
-
+    if (USBSERIAL.available()) {
+      txChar = USBSERIAL.read();
+      txNib = mbus_phy_ascii2txnibble(txChar);
+      if (txChar == 0x0d) {  // newlines come in as 0x0D for some reason
+        txNib = MBUS_END_MSG_CODE;
+      }
+      // app_debug_printf("beep %d %d\r\n", txChar, txNib);
+      if (txNib & 0x80) {  // misbit set if bad nibble
+        ; // do nothing
+      } else {
+        txNibQueue[txNibQueueLastIdx] = txNib;
+        txNibQueueLastIdx++;
+        if (txNib == MBUS_END_MSG_CODE) {
+          if (!mbus_phy_rx_is_busy(&phy) and !transmitting) {
+            transmitting = true;            
+            mbus_phy_tx_enable(&phy);
+            for (txNibQueueIdx=0; txNibQueueIdx < txNibQueueLastIdx; txNibQueueIdx++) {
+              mbus_phy_tx_push(&phy, txNibQueue[txNibQueueIdx]);
+            }
+            for (txNibQueueIdx=0; txNibQueueIdx < txNibQueueLastIdx; txNibQueueIdx++) {
+              app_debug_printf("%x  ", txNibQueue[txNibQueueIdx]);
+            }
+            app_debug_print("\r\n");
+            txNibQueueLastIdx = 0;
+          }
+        }
+      }
+    }
+    if (transmitting) {
+      if (!mbus_phy_tx_is_busy(&phy)) {
+        transmitting = false;
+        mbus_phy_tx_disable(&phy);
+      }
+    }
     yield();
   }
 }

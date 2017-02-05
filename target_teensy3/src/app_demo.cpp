@@ -493,15 +493,33 @@ void app_update(appStruct *pApp)
   if (!fifo_is_empty(&(pApp->simpleMbusMsgFifo))) {
     fifo_pop(&(pApp->simpleMbusMsgFifo), &simpleMbusMsg);
     app_debug_printf("simpleMbusMsg: %s\r\n", simpleMbusMsg2Str(simpleMbusMsg));
-    if (simpleMbusMsg == ping) {
+    switch (simpleMbusMsg) {
+    case ping:
       mbus_link_tx_ping(&pApp->link);
-    } else if (simpleMbusMsg == next) {
-      rn52_avrcp_next(&pApp->rn52);
-    } else if (simpleMbusMsg == prev) {
-      rn52_avrcp_prev(&pApp->rn52);
-    } else {
+      break;
+    case headPowerOn:
+      mbus_link_tx_cdPowerOn(&pApp->link);
       gotRxMsg = true;
+      break;
+    case next:
+      rn52_avrcp_next(&pApp->rn52);
+      break;
+    case prev:
+      rn52_avrcp_prev(&pApp->rn52);
+      break;
+    default:
+      gotRxMsg = true;
+      break;
     }
+    // if (simpleMbusMsg == ping) {
+    //   mbus_link_tx_ping(&pApp->link);
+    // } else if (simpleMbusMsg == next) {
+    //   rn52_avrcp_next(&pApp->rn52);
+    // } else if (simpleMbusMsg == prev) {
+    //   rn52_avrcp_prev(&pApp->rn52);
+    // } else {
+    //   gotRxMsg = true;
+    // }
   }
 
   int trackOffset;

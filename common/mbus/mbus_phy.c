@@ -29,7 +29,7 @@
 #define NIBBLE_END_GAP_TIME      ( (unsigned long)   (BIT_TIME))
 #define INTERBIT_TIMEOUT_TIME    ( (unsigned long)   (BIT_TIME))
 #define TX_TURNAROUND_DELAY_TIME ( (unsigned long)   (BIT_TIME))
-#define TX_MSG2MSG_WAIT          ( (unsigned long)   (BIT_TIME))
+#define TX_MSG2MSG_WAIT          ( (unsigned long)   2 * (BIT_TIME))
 
 // private function prototypes! 
 void _mbus_phy_rx_init(MbusPhyTxRxStruct *pMbusPhyRx,
@@ -102,6 +102,32 @@ char mbus_phy_rxnibble2ascii(uint8_t nib)  /* convert nibble to ascii hex */
   }
   return(0);
 }
+
+uint8_t mbus_phy_ascii2txnibble(char ascii_char)  /* convert ascii hex to nibble */
+{
+  switch(ascii_char) {
+  case '0': return(0); break;
+  case '1': return(1); break;
+  case '2': return(2); break;
+  case '3': return(3); break;
+  case '4': return(4); break;
+  case '5': return(5); break;
+  case '6': return(6); break;
+  case '7': return(7); break;
+  case '8': return(8); break;
+  case '9': return(9); break;
+  case 'A': return(10); break;
+  case 'B': return(11); break;
+  case 'C': return(12); break;
+  case 'D': return(13); break;
+  case 'E': return(14); break;
+  case 'F': return(15); break;
+  case '\n': return(MBUS_END_MSG_CODE); break; // appears after intra-nibble timeout, or inter-nibble timeout (normal cmd end) 
+  default: return(0x80); break;
+  }
+  return(0);
+}
+
 
 // 0x08 is shifted left to eventually flag a full nibble received as 0x80 bit set
 static const uint8_t RX_BIT_SHIFTER_INIT          = 0x08;

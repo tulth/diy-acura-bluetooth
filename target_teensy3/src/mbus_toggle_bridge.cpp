@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <WProgram.h>
 #include <core_pins.h>
+#include "app_debug.h"
 
 #define MSG_STR_SIZE 256
 

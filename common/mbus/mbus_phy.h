@@ -26,6 +26,7 @@ typedef struct {
 extern "C" {
 #endif // __cplusplus
   extern char mbus_phy_rxnibble2ascii(uint8_t nib);  /* convert nibble to ascii hex */
+  extern uint8_t mbus_phy_ascii2txnibble(char ascii_char);  /* convert ascii hex to nibble */
   extern void mbus_phy_init(MbusPhyStruct *pMbusPhy,
                             uint8_t *rxByteMemIn,
                             size_t rxByteMemInSize,
