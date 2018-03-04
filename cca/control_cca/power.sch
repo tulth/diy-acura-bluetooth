@@ -1,0 +1,390 @@
+EESchema Schematic File Version 2
+LIBS:power
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:t_cap
+LIBS:t_comm
+LIBS:t_conn
+LIBS:t_diode
+LIBS:t_microcontroller
+LIBS:t_module
+LIBS:t_opamp
+LIBS:t_power
+LIBS:t_relay
+LIBS:t_res
+LIBS:t_sensor
+LIBS:t_transistor
+LIBS:mechanical
+LIBS:control_cca-cache
+EELAYER 25 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 3 4
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+Text HLabel 1300 2800 0    60   Input ~ 0
+battIn
+Text HLabel 1300 3900 0    60   Input ~ 0
+accIn
+$Comp
+L GND #PWR012
+U 1 1 56F11AD9
+P 3300 4200
+F 0 "#PWR012" H 3300 3950 50  0001 C CNN
+F 1 "GND" H 3300 4050 50  0000 C CNN
+F 2 "" H 3300 4200 50  0000 C CNN
+F 3 "" H 3300 4200 50  0000 C CNN
+	1    3300 4200
+	1    0    0    -1  
+$EndComp
+Text HLabel 5600 800  2    60   Output ~ 0
+sw12VOut
+Text HLabel 5600 2800 2    60   Output ~ 0
+5VOut
+Text HLabel 5600 3900 2    60   Input ~ 0
+holdPowerOnIn
+Text HLabel 5600 1300 2    60   Input ~ 0
+accLowOut
+$Comp
+L R_thruhole R2
+U 1 1 5882C4BB
+P 2600 3100
+F 0 "R2" H 2600 3180 50  0000 C CNN
+F 1 "20K" H 2600 3000 50  0000 C CNN
+F 2 "t_footprints:Resistor_Horizontal_RM10mm" H 2700 2950 50  0001 C CNN
+F 3 "" V 2600 3000 50  0000 C CNN
+	1    2600 3100
+	0    1    1    0   
+$EndComp
+$Comp
+L AS393P-E1 U1
+U 1 1 5882C738
+P 4400 1600
+F 0 "U1" H 4550 1750 50  0000 C CNN
+F 1 "AS393P-E1" H 4650 1450 50  0000 C CNN
+F 2 "Housings_DIP:DIP-8_W7.62mm_LongPads" V 4950 1600 50  0001 C CNN
+F 3 "" H 4400 1600 50  0000 C CNN
+	1    4400 1600
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR013
+U 1 1 5882C79B
+P 4300 2000
+F 0 "#PWR013" H 4300 1750 50  0001 C CNN
+F 1 "GND" H 4300 1850 50  0000 C CNN
+F 2 "" H 4300 2000 50  0000 C CNN
+F 3 "" H 4300 2000 50  0000 C CNN
+	1    4300 2000
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR014
+U 1 1 5882C7D8
+P 3700 2300
+F 0 "#PWR014" H 3700 2050 50  0001 C CNN
+F 1 "GND" H 3700 2150 50  0000 C CNN
+F 2 "" H 3700 2300 50  0000 C CNN
+F 3 "" H 3700 2300 50  0000 C CNN
+	1    3700 2300
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_thruhole R4
+U 1 1 5882C8C0
+P 4000 1100
+F 0 "R4" H 4000 1180 50  0000 C CNN
+F 1 "47.5K" H 4000 1000 50  0000 C CNN
+F 2 "t_footprints:Resistor_Horizontal_RM10mm" H 4100 950 50  0001 C CNN
+F 3 "" V 4000 1000 50  0000 C CNN
+	1    4000 1100
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_thruhole R3
+U 1 1 5882C9E4
+P 3700 2000
+F 0 "R3" H 3700 2080 50  0000 C CNN
+F 1 "47.5K" H 3700 1900 50  0000 C CNN
+F 2 "t_footprints:Resistor_Horizontal_RM10mm" H 3800 1850 50  0001 C CNN
+F 3 "" V 3700 1900 50  0000 C CNN
+	1    3700 2000
+	0    1    1    0   
+$EndComp
+$Comp
+L ECA-1AM101 C1
+U 1 1 5882CB7B
+P 5200 3000
+F 0 "C1" H 5225 3100 50  0000 L CNN
+F 1 "ECA-1AM101" H 5225 2900 50  0000 L CNN
+F 2 "t_footprints:C_Radial_D5_L12_P2" H 5238 2850 50  0001 C CNN
+F 3 "" H 5200 3000 50  0000 C CNN
+	1    5200 3000
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR015
+U 1 1 5882CCC8
+P 5200 3300
+F 0 "#PWR015" H 5200 3050 50  0001 C CNN
+F 1 "GND" H 5200 3150 50  0000 C CNN
+F 2 "" H 5200 3300 50  0000 C CNN
+F 3 "" H 5200 3300 50  0000 C CNN
+	1    5200 3300
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR016
+U 1 1 5882CD3F
+P 4500 3400
+F 0 "#PWR016" H 4500 3150 50  0001 C CNN
+F 1 "GND" H 4500 3250 50  0000 C CNN
+F 2 "" H 4500 3400 50  0000 C CNN
+F 3 "" H 4500 3400 50  0000 C CNN
+	1    4500 3400
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR017
+U 1 1 5882D372
+P 2500 4200
+F 0 "#PWR017" H 2500 3950 50  0001 C CNN
+F 1 "GND" H 2500 4050 50  0000 C CNN
+F 2 "" H 2500 4200 50  0000 C CNN
+F 3 "" H 2500 4200 50  0000 C CNN
+	1    2500 4200
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR018
+U 1 1 5882D3CD
+P 1700 4500
+F 0 "#PWR018" H 1700 4250 50  0001 C CNN
+F 1 "GND" H 1700 4350 50  0000 C CNN
+F 2 "" H 1700 4500 50  0000 C CNN
+F 3 "" H 1700 4500 50  0000 C CNN
+	1    1700 4500
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_thruhole R1
+U 1 1 5882D705
+P 1700 4200
+F 0 "R1" H 1700 4280 50  0000 C CNN
+F 1 "47.5K" H 1700 4100 50  0000 C CNN
+F 2 "t_footprints:Resistor_Horizontal_RM10mm" H 1800 4050 50  0001 C CNN
+F 3 "" V 1700 4100 50  0000 C CNN
+	1    1700 4200
+	0    1    1    0   
+$EndComp
+$Comp
+L R-78E5.0-0.5 U2
+U 1 1 5882D94D
+P 4500 2900
+F 0 "U2" H 4500 3200 60  0000 C CNN
+F 1 "R-78E5.0-0.5" H 4500 3100 60  0000 C CNN
+F 2 "t_footprints:R-78E5.0-0.5" H 4500 3100 60  0001 C CNN
+F 3 "" H 4500 3100 60  0000 C CNN
+	1    4500 2900
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR019
+U 1 1 5882E837
+P 5100 1900
+F 0 "#PWR019" H 5100 1650 50  0001 C CNN
+F 1 "GND" H 5100 1750 50  0000 C CNN
+F 2 "" H 5100 1900 50  0000 C CNN
+F 3 "" H 5100 1900 50  0000 C CNN
+	1    5100 1900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3300 4100 3300 4200
+Wire Wire Line
+	3100 2800 4000 2800
+Wire Wire Line
+	3100 2700 3200 2700
+Wire Wire Line
+	3200 2700 3200 2800
+Connection ~ 3200 2800
+Wire Wire Line
+	4300 1900 4300 2000
+Wire Wire Line
+	3400 700  3400 2800
+Wire Wire Line
+	3400 800  5600 800 
+Connection ~ 3400 2800
+Wire Wire Line
+	4300 800  4300 1300
+Connection ~ 4300 800 
+Wire Wire Line
+	4200 1100 4300 1100
+Connection ~ 4300 1100
+Wire Wire Line
+	4100 1700 3700 1700
+Wire Wire Line
+	3700 1100 3700 1800
+Wire Wire Line
+	3700 2200 3700 2300
+Wire Wire Line
+	3800 1100 3700 1100
+Connection ~ 3700 1700
+Wire Wire Line
+	4500 3200 4500 3400
+Wire Wire Line
+	5000 2800 5600 2800
+Connection ~ 5200 2800
+Wire Wire Line
+	2500 4100 2500 4200
+Wire Wire Line
+	1300 3900 2200 3900
+Wire Wire Line
+	4100 1500 1600 1500
+Wire Wire Line
+	1600 1500 1600 3900
+Connection ~ 1600 3900
+Wire Wire Line
+	2600 3300 2600 3400
+Wire Wire Line
+	2500 3400 3300 3400
+Wire Wire Line
+	2500 3400 2500 3700
+Wire Wire Line
+	2900 3400 2900 3100
+Connection ~ 2600 3400
+Wire Wire Line
+	3300 3400 3300 3700
+Connection ~ 2900 3400
+Wire Wire Line
+	1700 3900 1700 4000
+Connection ~ 1700 3900
+Wire Wire Line
+	1700 4400 1700 4500
+Wire Wire Line
+	3600 3900 5600 3900
+Wire Wire Line
+	4800 1600 4700 1600
+Wire Wire Line
+	5100 1800 5100 1900
+Wire Wire Line
+	5600 1300 5100 1300
+Wire Wire Line
+	5100 1300 5100 1400
+Wire Wire Line
+	5200 2900 5200 2800
+Wire Wire Line
+	5200 3100 5200 3300
+$Comp
+L PWR_FLAG #FLG020
+U 1 1 5883BF68
+P 3400 700
+F 0 "#FLG020" H 3400 795 50  0001 C CNN
+F 1 "PWR_FLAG" H 3400 880 50  0000 C CNN
+F 2 "" H 3400 700 50  0000 C CNN
+F 3 "" H 3400 700 50  0000 C CNN
+	1    3400 700 
+	1    0    0    -1  
+$EndComp
+Connection ~ 3400 800 
+$Comp
+L IRFU9024NPBF Q2
+U 1 1 5883B5F5
+P 2900 2900
+F 0 "Q2" H 3200 2950 50  0000 R CNN
+F 1 "IRFU9024NPBF" H 3600 2850 50  0000 R CNN
+F 2 "t_footprints:TO-251AA-TPAD" H 3100 3000 50  0001 C CNN
+F 3 "" H 2900 2900 50  0000 C CNN
+	1    2900 2900
+	0    1    -1   0   
+$EndComp
+$Comp
+L BSS138N Q1
+U 1 1 5883B57E
+P 2400 3900
+F 0 "Q1" H 2600 3975 50  0000 L CNN
+F 1 "BSS138N" H 2600 3900 50  0000 L CNN
+F 2 "TO_SOT_Packages_SMD:SOT-23_Handsoldering" H 2600 3825 50  0001 L CIN
+F 3 "" H 2400 3900 50  0000 L CNN
+	1    2400 3900
+	1    0    0    -1  
+$EndComp
+$Comp
+L BSS138N Q3
+U 1 1 5883B684
+P 3400 3900
+F 0 "Q3" H 3600 3975 50  0000 L CNN
+F 1 "BSS138N" H 3600 3900 50  0000 L CNN
+F 2 "TO_SOT_Packages_SMD:SOT-23_Handsoldering" H 3600 3825 50  0001 L CIN
+F 3 "" H 3400 3900 50  0000 L CNN
+	1    3400 3900
+	-1   0    0    -1  
+$EndComp
+$Comp
+L BSS138N Q4
+U 1 1 5883B868
+P 5000 1600
+F 0 "Q4" H 5200 1675 50  0000 L CNN
+F 1 "BSS138N" H 5200 1600 50  0000 L CNN
+F 2 "TO_SOT_Packages_SMD:SOT-23_Handsoldering" H 5200 1525 50  0001 L CIN
+F 3 "" H 5000 1600 50  0000 L CNN
+	1    5000 1600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1950 2800 2700 2800
+Wire Wire Line
+	2600 2800 2600 2900
+Connection ~ 2600 2800
+Wire Wire Line
+	1750 2800 1300 2800
+$Comp
+L 1N4004 D1
+U 1 1 5883BBD2
+P 1850 2800
+F 0 "D1" H 1850 2900 50  0000 C CNN
+F 1 "1N4004" H 1850 2700 50  0000 C CNN
+F 2 "Diodes_ThroughHole:D_DO-41_SOD81_P10.16mm_Horizontal" H 1750 2800 50  0001 C CNN
+F 3 "" H 1850 2800 50  0000 C CNN
+	1    1850 2800
+	-1   0    0    -1  
+$EndComp
+Text Label 3500 2800 0    60   ~ 0
+swBattIn
+Text Label 2000 2800 0    60   ~ 0
+protBattIn
+$EndSCHEMATC
