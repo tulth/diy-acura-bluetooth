@@ -54,7 +54,7 @@ add_library(cmn STATIC ${CMN_SRC})
 set_target_properties(cmn PROPERTIES COMPILE_FLAGS "-Wpedantic -Wextra -Werror")
 
 ##############################
-foreach( top_src mbus_toggle_sniffer.cpp mbus_nibble_sniffer.cpp mbus_msg_sniffer.cpp mbus_toggle_bridge.cpp mbus_nibble_bridge.cpp bt_bridge.cpp bt_demo.cpp mbus_msg_ping_reply.cpp app_demo.cpp app_demo_toggle_sniffer.cpp blink.cpp cca_test.cpp )
+foreach( top_src mbus_toggle_sniffer.cpp mbus_nibble_sniffer.cpp mbus_msg_sniffer.cpp mbus_toggle_bridge.cpp mbus_nibble_bridge.cpp bt_bridge.cpp bt_demo.cpp mbus_msg_ping_reply.cpp app_demo.cpp app_demo_toggle_sniffer.cpp blink.cpp cca_test.cpp bt_toggle_sniffer.cpp )
     string( REPLACE ".cpp" ".elf" top_elf ${top_src} )
     add_executable( ${top_elf} src/${top_src} )
     target_link_libraries( ${top_elf} cmn teensy3 )
