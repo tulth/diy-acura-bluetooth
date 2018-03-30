@@ -6,10 +6,10 @@
 #define MSG_STR_SIZE 256
 
 #define PINBIT_LED CORE_PIN13_BITMASK
-#define PINBIT_MBUS_SENSE_LO (1<<2)
-#define PINBIT_MBUS_DRIVE_LO (1<<1)
-#define PINBIT_ACC_SENSE_LO (1<<5)
-#define PINBIT_HOLD_POWER_ON (1<<6)
+#define PINBIT_MBUS_SENSE CORE_PIN23_BITMASK
+#define PINBIT_MBUS_DRIVE_LO CORE_PIN22_BITMASK
+#define PINBIT_ACC_SENSE_LO CORE_PIN20_BITMASK
+#define PINBIT_HOLD_POWER_ON CORE_PIN21_BITMASK
 #define USBSERIAL Serial
 
 extern "C" int main(void)
@@ -61,7 +61,7 @@ extern "C" int main(void)
       }
     }
 
-    mbusPinVal = (GPIOC_PDIR & PINBIT_MBUS_SENSE_LO) != 0;
+    mbusPinVal = (GPIOC_PDIR & PINBIT_MBUS_SENSE) != 0;
     if (mbusPinVal != prevMbusPinVal) {
       if (mbusPinVal) {
         USBSERIAL.println("m1");
