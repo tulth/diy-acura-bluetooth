@@ -18,6 +18,9 @@
 #define PINBIT_MBUS_SENSE CORE_PIN23_BITMASK
 #define PINBIT_MBUS_DRIVE_LO CORE_PIN22_BITMASK
 #define PINBIT_RN52_CMDLO CORE_PIN4_BITMASK
+#define PINCFG_RN52_CMDLO CORE_PIN4_CONFIG
+#define PINDDR_RN52_CMDLO CORE_PIN4_DDRREG
+#define PINDOR_RN52_CMDLO CORE_PIN4_PORTREG
 #define PINBIT_RN52_CONNSTAT_EVENT CORE_PIN5_BITMASK
 
 #define USBSERIAL Serial
@@ -134,16 +137,16 @@ extern "C" int main(void)
   PORTC_PCR5 = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* LED */
   PORTC_PCR2 = PORT_PCR_PE  | PORT_PCR_PS  | PORT_PCR_MUX(1); /* MBUS SENSE */
   PORTC_PCR1 = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* MBUS DRIVE LO */
-  PORTA_PCR13 = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* RN52 CMD LO */
+  PINCFG_RN52_CMDLO = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* RN52 CMD LO */
   PORTD_PCR7 = PORT_PCR_PE  | PORT_PCR_PS  | PORT_PCR_MUX(1); /* RN52 connection status change bit */
 
   GPIOC_PDDR |= PINBIT_LED;  /* gpio data direction reg, for led bit */
   GPIOC_PDDR |= PINBIT_MBUS_DRIVE_LO;  /* gpio data direction reg, for driveMbusPinLo */
-  GPIOA_PDDR |= PINBIT_RN52_CMDLO;  /* gpio data direction reg, for cmd lo */
+  PINDDR_RN52_CMDLO |= PINBIT_RN52_CMDLO;  /* gpio data direction reg, for cmd lo */
 
   GPIOC_PCOR = PINBIT_LED;  /* set led bit low */
   GPIOC_PCOR = PINBIT_MBUS_DRIVE_LO;  /* don't drive mbus low */
-  GPIOA_PSOR = PINBIT_RN52_CMDLO;  /* don't drive rn52 cmd request low (yet) */
+  PINDOR_RN52_CMDLO |= PINBIT_RN52_CMDLO;  /* don't drive rn52 cmd request low (yet) */
 
   HWSERIAL1.begin(115200);
   USBSERIAL.begin(115200);
@@ -364,9 +367,9 @@ extern "C" int main(void)
                 rn52EventPin,
                 &rn52CmdModePin);
     if (rn52CmdModePin) {
-      GPIOA_PSOR = PINBIT_RN52_CMDLO;
+      PINDOR_RN52_CMDLO |= PINBIT_RN52_CMDLO;
     } else {
-      GPIOA_PCOR = PINBIT_RN52_CMDLO;
+      PINDOR_RN52_CMDLO &= ~PINBIT_RN52_CMDLO;
     }
 
     yield();

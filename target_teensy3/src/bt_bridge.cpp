@@ -4,6 +4,9 @@
 
 #define PINBIT_LED CORE_PIN13_BITMASK
 #define PINBIT_RN52_CMDLO CORE_PIN4_BITMASK
+#define PINCFG_RN52_CMDLO CORE_PIN4_CONFIG
+#define PINDDR_RN52_CMDLO CORE_PIN4_DDRREG
+#define PINDOR_RN52_CMDLO CORE_PIN4_PORTREG
 #define PINBIT_RN52_CONNSTAT_EVENT CORE_PIN5_BITMASK
 #define PINBIT_CTS CORE_PIN2_BITMASK
 
@@ -18,11 +21,11 @@ extern "C" int main(void)
 {
   int incomingByte;
 
-  PORTA_PCR13 = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* CMD LO */
+  PINCFG_RN52_CMDLO = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* RN52 CMD LO */
   PORTC_PCR5 = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* LED */
   PORTD_PCR7 = PORT_PCR_PE  | PORT_PCR_PS  | PORT_PCR_MUX(1); /* state change bit */
 
-  GPIOA_PDDR |= PINBIT_RN52_CMDLO;  /* gpio data direction reg, for cmd lo */
+  PINDDR_RN52_CMDLO |= PINBIT_RN52_CMDLO;  /* gpio data direction reg, for cmd lo */
   GPIOC_PDDR |= PINBIT_LED;  /* gpio data direction reg, for led bit */
 
   GPIOC_PCOR = PINBIT_LED;  /* set led bit low */
@@ -75,9 +78,9 @@ void setCmdMode(void)
   uint8_t done = 0;
 
   while(!done) {
-    GPIOA_PSOR = PINBIT_RN52_CMDLO;  /* set cmd lo 1 */
+    PINDOR_RN52_CMDLO |= PINBIT_RN52_CMDLO;
     delay(100);
-    GPIOA_PCOR = PINBIT_RN52_CMDLO;  /* set cmd lo 0 */
+    PINDOR_RN52_CMDLO &= ~PINBIT_RN52_CMDLO;
     gReadLineDone = 0;
     while (!gReadLineDone) {
       readUntilNewline();
