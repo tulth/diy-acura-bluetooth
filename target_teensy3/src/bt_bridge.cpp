@@ -2,7 +2,7 @@
 #include <WProgram.h>
 #include "rn52.h"
 
-#define PINBIT_LED (1<<5)
+#define PINBIT_LED CORE_PIN13_BITMASK
 #define PINBIT_RN52_CMDLO (1<<13)
 #define PINBIT_RN52_CONNSTAT_EVENT (1<<7)
 
