@@ -6,7 +6,7 @@
 
 #define BYTE_MEM_SIZE 64
 
-#define PINBIT_LED (1<<5)
+#define PINBIT_LED CORE_PIN13_BITMASK
 #define PINBIT_MBUS_SENSE (1<<2)
 
 #define USBSERIAL Serial
