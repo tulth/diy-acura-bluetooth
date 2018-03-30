@@ -5,6 +5,7 @@
 #define PINBIT_LED CORE_PIN13_BITMASK
 #define PINBIT_RN52_CMDLO (1<<13)
 #define PINBIT_RN52_CONNSTAT_EVENT (1<<7)
+#define PINBIT_CTS (1<<0)
 
 #define USBSERIAL Serial
 #define HWSERIAL1 Serial1
@@ -26,6 +27,10 @@ extern "C" int main(void)
 
   GPIOC_PCOR = PINBIT_LED;  /* set led bit low */
 
+  PORTD_PCR0 = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* CTS */
+  GPIOD_PDDR |= PINBIT_CTS;  /* gpio data direction reg, CTS output */
+  GPIOD_PSOR = PINBIT_CTS;  /* set CTS bit hi */
+  
   HWSERIAL1.begin(115200);
   USBSERIAL.begin(115200);
   setCmdMode();
