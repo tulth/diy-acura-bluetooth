@@ -46,9 +46,9 @@ typedef struct {
   fifo avrcpCmdFifo;
 } Rn52Struct;
 
-const uint16_t DEFAULT_EXTFEAT = (RN52_EXTFEAT_DISABLE_SYSTEM_TONES  |
-                                  RN52_EXTFEAT_ENA_POWERON_RECONNECT);
-/* const uint16_t DEFAULT_EXTFEAT = (RN52_EXTFEAT_DISABLE_SYSTEM_TONES); */
+/* const uint16_t DEFAULT_EXTFEAT = (RN52_EXTFEAT_DISABLE_SYSTEM_TONES  | */
+/*                                   RN52_EXTFEAT_ENA_POWERON_RECONNECT); */
+const uint16_t DEFAULT_EXTFEAT = (RN52_EXTFEAT_DISABLE_SYSTEM_TONES);
 
 
 #define RN52_AVRCP_CMD_PLAY      1
