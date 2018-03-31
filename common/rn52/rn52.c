@@ -5,12 +5,13 @@
 typedef enum {
   STARTING_UP = 1,
   REBOOT,
-  POST_REBOOT,
   READ_INITIAL_CONSTAT,
   READ_EXTFEAT,
   CHECK_EXTFEAT,
   SET_EXTFEAT,
   RUNNING,
+  RECONNECT,
+  RECONNECT_CHECK,
   SWITCH_TO_CMD_MODE,
   SWITCH_TO_CMD_DELAY_HI,
   SWITCH_TO_CMD_DELAY_LO,
@@ -112,6 +113,9 @@ void _doAvrCpCmdIfAvailable(Rn52Struct *pRn52)
 
 bool _rn52_is_cmd_reboot(Rn52Struct *pRn52)
 {
+  if (pRn52->txCmd[0] != 'R') { return false; }
+  if (pRn52->txCmd[1] != ',') { return false; }
+  if (pRn52->txCmd[2] != '1') { return false; }
   return (strcmp(pRn52->txCmd, "R,1"));
 }
 
@@ -129,12 +133,17 @@ void rn52_update(Rn52Struct *pRn52,
   if (pRn52->pFuncSerialAvailable()) {
     rxC = pRn52->pFuncSerialGetChar();
     pRn52->rxStr[pRn52->rxStrLen] = rxC;
+#ifdef DEBUG_RN52
+    /* app_debug_printf("r"); */
+    /* app_debug_putchar(rxC); */
+    /* app_debug_printf("%d\r\n", pRn52->rxStrLen); */
+#endif /* DEBUG_RN52 */
     pRn52->rxStrLen++;
   }
   switch (pRn52->state) {
   case STARTING_UP:
-    pRn52->state = REBOOT;
-    pRn52->returnState = POST_REBOOT;
+    pRn52->state = SWITCH_TO_CMD_MODE;
+    pRn52->returnState = REBOOT;
     break;
   case REBOOT:
     idx=0;
@@ -143,9 +152,6 @@ void rn52_update(Rn52Struct *pRn52,
     pRn52->txCmd[idx++] = '1';
     pRn52->txCmd[idx++] = '\0';
     pRn52->state = ACTION_OR_SET_CMD;
-    break;
-  case POST_REBOOT:
-    pRn52->state = SWITCH_TO_CMD_MODE;
     pRn52->returnState = READ_INITIAL_CONSTAT;
     break;
   case READ_INITIAL_CONSTAT:
@@ -191,12 +197,19 @@ void rn52_update(Rn52Struct *pRn52,
     } else if (rn52_is_connected(pRn52)) {
       _doAvrCpCmdIfAvailable(pRn52);
     } else {  /* far end is not connected */
-      idx=0;
-      pRn52->txCmd[idx++] = 'B';
-      pRn52->txCmd[idx++] = '\0';
-      pRn52->state = ACTION_OR_SET_CMD;
-      pRn52->returnState = RUNNING;
+      pRn52->state = RECONNECT;
     }
+    break;
+  case RECONNECT:
+    idx=0;
+    pRn52->txCmd[idx++] = 'B';
+    pRn52->txCmd[idx++] = '\0';
+    pRn52->state = ACTION_OR_SET_CMD;
+    pRn52->returnState = RECONNECT_CHECK;
+    break;
+  case RECONNECT_CHECK:
+    pRn52->state = QUERY_CONSTAT;
+    pRn52->returnState = RUNNING;
     break;
   case SWITCH_TO_CMD_MODE:
     *pCmdPin = true;
