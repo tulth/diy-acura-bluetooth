@@ -110,6 +110,11 @@ void _doAvrCpCmdIfAvailable(Rn52Struct *pRn52)
   }
 }
 
+bool _rn52_is_cmd_reboot(Rn52Struct *pRn52)
+{
+  return (strcmp(pRn52->txCmd, "R,1"));
+}
+
 void rn52_update(Rn52Struct *pRn52,
                  unsigned long milliSecElapsed,
                  bool eventStatePin,
@@ -248,20 +253,34 @@ void rn52_update(Rn52Struct *pRn52,
     pRn52->rxStrLen = 0;
     break;
   case ACTION_OR_SET_CMD_AWAIT_RESP:
-    if (pRn52->rxStrLen >= 5) {
-      if (strcmp(pRn52->rxStr, "AOK\r\n")) {
-        /* got good response, return */
-        pRn52->state = pRn52->returnState;
-        pRn52->rxStrLen = 0;
-      } else {
-        /* bad response, try again */
-        pRn52->state = ACTION_OR_SET_CMD;
-        pRn52->rxStrLen = 0;
-      }
-    } else if ((milliSecElapsed - pRn52->replyMilliSecTimeStamp) > RN52_CMD_TIMEOUT_MILLSEC) {
+    if ((milliSecElapsed - pRn52->replyMilliSecTimeStamp) > RN52_CMD_TIMEOUT_MILLSEC) {
       /* timed out, try again */
       pRn52->state = ACTION_OR_SET_CMD;
       pRn52->rxStrLen = 0;
+    } else if (_rn52_is_cmd_reboot(pRn52)) {
+      if (pRn52->rxStrLen >= 9) {
+        if (strcmp(pRn52->rxStr, "Reboot!\r\n")) {
+          /* got good response, return */
+          pRn52->state = pRn52->returnState;
+          pRn52->rxStrLen = 0;
+        } else {
+          /* bad response, try again */
+          pRn52->state = ACTION_OR_SET_CMD;
+          pRn52->rxStrLen = 0;
+        }
+      }
+    } else { // not a timeout or special reply command
+      if (pRn52->rxStrLen >= 5) {
+        if (strcmp(pRn52->rxStr, "AOK\r\n")) {
+          /* got good response, return */
+          pRn52->state = pRn52->returnState;
+          pRn52->rxStrLen = 0;
+        } else {
+          /* bad response, try again */
+          pRn52->state = ACTION_OR_SET_CMD;
+          pRn52->rxStrLen = 0;
+        }
+      }
     }
     break;
   case QUERY_CONSTAT:
