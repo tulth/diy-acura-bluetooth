@@ -4,11 +4,12 @@
 
 typedef enum {
   STARTING_UP = 1,
+  REBOOT,
+  POST_REBOOT,
   READ_INITIAL_CONSTAT,
   READ_EXTFEAT,
   CHECK_EXTFEAT,
   SET_EXTFEAT,
-  REBOOT,
   RUNNING,
   SWITCH_TO_CMD_MODE,
   SWITCH_TO_CMD_DELAY_HI,
@@ -127,6 +128,18 @@ void rn52_update(Rn52Struct *pRn52,
   }
   switch (pRn52->state) {
   case STARTING_UP:
+    pRn52->state = REBOOT;
+    pRn52->returnState = POST_REBOOT;
+    break;
+  case REBOOT:
+    idx=0;
+    pRn52->txCmd[idx++] = 'R';
+    pRn52->txCmd[idx++] = ',';
+    pRn52->txCmd[idx++] = '1';
+    pRn52->txCmd[idx++] = '\0';
+    pRn52->state = ACTION_OR_SET_CMD;
+    break;
+  case POST_REBOOT:
     pRn52->state = SWITCH_TO_CMD_MODE;
     pRn52->returnState = READ_INITIAL_CONSTAT;
     break;
@@ -143,7 +156,6 @@ void rn52_update(Rn52Struct *pRn52,
     if (pRn52->extFeat != DEFAULT_EXTFEAT) {
       app_debug_printf("mismatch extfeat! DEFAULT_EXTFEAT:0x%04X extFeat:0x%04X\r\n",
                        DEFAULT_EXTFEAT, pRn52->extFeat);
-      //      pRn52->state = RUNNING;
       pRn52->state = SET_EXTFEAT;
     } else {
       pRn52->state = RUNNING;
@@ -158,15 +170,6 @@ void rn52_update(Rn52Struct *pRn52,
     pRn52->txCmd[idx++] = nibble2HexChar((DEFAULT_EXTFEAT >> 8) & 0xF);
     pRn52->txCmd[idx++] = nibble2HexChar((DEFAULT_EXTFEAT >> 4) & 0xF);
     pRn52->txCmd[idx++] = nibble2HexChar((DEFAULT_EXTFEAT >> 0) & 0xF);
-    pRn52->txCmd[idx++] = '\0';
-    pRn52->state = ACTION_OR_SET_CMD;
-    pRn52->returnState = REBOOT;
-    break;
-  case REBOOT:
-    idx=0;
-    pRn52->txCmd[idx++] = 'R';
-    pRn52->txCmd[idx++] = ',';
-    pRn52->txCmd[idx++] = '1';
     pRn52->txCmd[idx++] = '\0';
     pRn52->state = ACTION_OR_SET_CMD;
     pRn52->returnState = STARTING_UP;
