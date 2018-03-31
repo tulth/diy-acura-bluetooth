@@ -186,9 +186,11 @@ void rn52_update(Rn52Struct *pRn52,
     } else if (rn52_is_connected(pRn52)) {
       _doAvrCpCmdIfAvailable(pRn52);
     } else {  /* far end is not connected */
-      /* strcpy(pRn52->txCmd,"B"); */
-      /* pRn52->state = ACTION_OR_SET_CMD; */
-      /* pRn52->returnState = RUNNING; */
+      idx=0;
+      pRn52->txCmd[idx++] = 'B';
+      pRn52->txCmd[idx++] = '\0';
+      pRn52->state = ACTION_OR_SET_CMD;
+      pRn52->returnState = RUNNING;
     }
     break;
   case SWITCH_TO_CMD_MODE:
