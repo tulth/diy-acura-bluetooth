@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name diy-acura-bluetooth)(type KiCad)(uri "$(KIPRJMOD)/diy-acura-bluetooth.pretty")(options "")(descr ""))
+)

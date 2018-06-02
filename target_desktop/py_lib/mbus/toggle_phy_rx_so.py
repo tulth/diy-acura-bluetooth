@@ -12,7 +12,7 @@ from . import mbusTime
 from . import nibbles
 from . import toggles
 
-libSoName="build/libMbus.so"
+libSoName = "build/libMbus.so"
 
 def main(argv):
     cfg = parseArgs(argv)
@@ -64,7 +64,7 @@ def toggleSim(lowLevelToggleSeq):
         if not libMbus.mbus_phy_rx_is_empty(ctypes.byref(mbusPhy)):
             while not libMbus.mbus_phy_rx_is_empty(ctypes.byref(mbusPhy)):
                 newNib = libMbus.mbus_phy_rx_pop(ctypes.byref(mbusPhy))
-                if newNib == MBUS_END_MSG_CODE:
+                if newNib == nibbles.MBUS_END_MSG_CODE:
                     # print("{}".format("".join(rxNibList)))
                     # print("{}".format(rxNibList))
                     rxNibListList.append(rxNibList)

@@ -6,9 +6,27 @@ import datetime
 import string
 import ctypes
 from .. import toggles
-from .. import *
+from .. import mbusTime
+from ... import mbus
 
 MAX_ARRAY_SIZE = 32
+
+MBUS_LOW_TOO_LONG_CODE = 16
+MBUS_TIMEOUT_CODE = 17
+MBUS_END_MSG_CODE = 18
+
+def nibbleSeq2Str(nibbleSeq):
+    resultList = []
+    for nibble in nibbleSeq:
+        if nibble == MBUS_LOW_TOO_LONG_CODE:
+            resultList.append('L')
+        elif nibble == MBUS_TIMEOUT_CODE:
+            resultList.append('T')
+        elif nibble < 16:
+            resultList.append("{:X}".format(nibble))
+        else:
+            resultList.append("X")
+    return "".join(resultList)
 
 
 class MbusRawNibbleListStruct(ctypes.Structure):
@@ -17,10 +35,33 @@ class MbusRawNibbleListStruct(ctypes.Structure):
         ("numNibbles", ctypes.c_uint8),
         ]
 
+    def __str__(self):
+        seq = tuple([self.nibbles[num] for num in range(self.numNibbles)])
+        return nibbleSeq2Str(seq)
+
+
+class MbusPackedNibblesStruct(ctypes.Structure):
+    _fields_ = [
+        ("packNibbles", ctypes.c_uint64),
+        ("numNibbles", ctypes.c_uint8),
+        ]
+
+    def __str__(self):
+        nibList = []
+        for nibIdx in range(self.numNibbles):
+            nibble = (self.packNibbles >> (self.numNibbles - nibIdx)) & 0xF
+            nibList.append("{:x}".format(nibble))
+        seq = "".join(nibList)
+        return nibbleSeq2Str(seq)
+
+
+class MbusRawNibbleList(object):
+
     def __init__(self, mbusTimeFormat="pyTimeElapsed"):
         super().__init__()
+        self.nibbles = (ctypes.c_byte * MAX_ARRAY_SIZE)(0)
         self.time = mbusTime.MbusTime(val=0, mbusTimeFormat=mbusTimeFormat)
-        self.numNibbles=0
+        self.numNibbles = 0
 
     def nibbleSeq2Str(self, nibbleSeq):
         resultList = []
@@ -52,7 +93,7 @@ class MbusRawNibbleListStruct(ctypes.Structure):
         nib = self.hexChar2Nibble(argHexNibbleChar)
         self.nibbles[self.numNibbles] = nib
         self.numNibbles += 1
-        
+
     def hexChar2Nibble(self, argChar):
         if argChar in string.hexdigits:
             return (int(argChar, 16))
@@ -62,7 +103,7 @@ class MbusRawNibbleListStruct(ctypes.Structure):
             return (MBUS_TIMEOUT_CODE)
         else:
             return (0xFF)
-        
+
     def hexStr2NibbleSeq(self, argStr):
         nibbleSeq = []
         for char in argStr:
@@ -70,7 +111,7 @@ class MbusRawNibbleListStruct(ctypes.Structure):
         return nibbleSeq
 
     def toToggles(self, ):
-        currentTimeUs = self.time - 4 * self.numNibbles * BIT_TIME + NIBBLE_END_GAP_TIME
+        currentTimeUs = self.time - 4 * self.numNibbles * mbus.BIT_TIME + mbus.NIBBLE_END_GAP_TIME
         toggleList = toggles.ToggleList()
         for idx in range(self.numNibbles):
             nibble = int(self.nibbles[idx])
@@ -78,25 +119,25 @@ class MbusRawNibbleListStruct(ctypes.Structure):
                 # print("{:10}: drop nibble{} bit{}".format(currentTimeUs, nibble, bit))
                 toggleList.append(toggles.fromTimeValStr_ToggleElement(currentTimeUs, '0', "microsInt"))
                 if bit == '0':
-                    currentTimeUs += BIT_ZERO_LOW_TIME
+                    currentTimeUs += mbus.BIT_ZERO_LOW_TIME
                 else:
-                    currentTimeUs += BIT_ONE_LOW_TIME
+                    currentTimeUs += mbus.BIT_ONE_LOW_TIME
                 # print("{:10}: rise".format(currentTimeUs))
                 toggleList.append(toggles.fromTimeValStr_ToggleElement(currentTimeUs, '1', "microsInt"))
                 if bit == '0':
-                    currentTimeUs += (BIT_TIME - BIT_ZERO_LOW_TIME)
+                    currentTimeUs += (mbus.BIT_TIME - mbus.BIT_ZERO_LOW_TIME)
                 else:
-                    currentTimeUs += (BIT_TIME - BIT_ONE_LOW_TIME)
+                    currentTimeUs += (mbus.BIT_TIME - mbus.BIT_ONE_LOW_TIME)
         return toggleList
 
 
-def fromStr_MbusRawNibbleListStruct(argStr, mbusTimeFormat="pyTimeElapsed"):
-    obj = MbusRawNibbleListStruct(mbusTimeFormat)
+def fromStr_MbusRawNibbleList(argStr, mbusTimeFormat="pyTimeElapsed"):
+    obj = MbusRawNibbleList(mbusTimeFormat)
     obj.fromStr(argStr)
     return obj
 
 
-class MbusRawNibbleListStructList(list):
+class MbusRawNibbleListList(list):
 
     def __init__(self, mbusTimeFormat="pyTimeElapsed"):
         self.mbusTimeFormat = mbusTimeFormat
@@ -127,7 +168,7 @@ class MbusRawNibbleListStructList(list):
             line, fileReadDone = self.readLineFromFileHandle(fileHandle)
             if line is not None:
                 line = line.rstrip()
-                self.append(fromStr_MbusRawNibbleListStruct(line, mbusTimeFormat=self.mbusTimeFormat))
+                self.append(fromStr_MbusRawNibbleList(line, mbusTimeFormat=self.mbusTimeFormat))
 
     def toFileName(self, fileName):
         """if none, prints to stdout"""

@@ -1,47 +1,53 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <WProgram.h>
-#include <usb_dev.h>
-#include <usb_serial.h>
 #include <core_pins.h>
 
-#define USB_STR_MAX_LEN 256
+#define MSG_STR_SIZE 256
+
+#define PINBIT_LED CORE_PIN13_BITMASK
+#define PINBIT_MBUS_SENSE CORE_PIN23_BITMASK
+
+#define USBSERIAL Serial
 
 extern "C" int main(void)
 {
   elapsedMillis blinkMilliSecElapsed;
-  char usbStrBuf[USB_STR_MAX_LEN];
-  int usbStrLen;
   bool pinVal, prevPinVal;
-  
-  usb_init();
-  PORTC_PCR5 |= PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1);
-  PORTC_PCR2 |= PORT_PCR_MUX(1) | PORT_PCR_PE | PORT_PCR_PS;
-  GPIOC_PDDR |= 0x20;  // gpio data direction reg, for led bit
+  char msgStr[MSG_STR_SIZE];
+  int msgStrLen;
 
-  usb_serial_write("vcd:\n", 6);
+  PORTC_PCR5 = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* LED */
+  PORTC_PCR2 = PORT_PCR_PE  | PORT_PCR_PS  | PORT_PCR_MUX(1); /* MBUS SENSE */
+
+  GPIOC_PDDR |= PINBIT_LED;  /* gpio data direction reg, for led bit */
+
+  GPIOC_PCOR = PINBIT_LED;  /* set led bit low */
+
+  USBSERIAL.begin(115200);
   blinkMilliSecElapsed = 0;
-
   prevPinVal = 0;
   while (1) {
+    /* blink */
     if (blinkMilliSecElapsed > 1000) {
-      GPIOC_PTOR = 0x20;  // gpio toggle reg, for led bit
+      GPIOC_PTOR = PINBIT_LED;  /* gpio toggle reg, for led bit */
       blinkMilliSecElapsed = 0;
     }
-    
-    pinVal = (GPIOC_PDIR & 0x04) != 0;
+
+    pinVal = (GPIOC_PDIR & PINBIT_MBUS_SENSE) != 0;
     if (pinVal != prevPinVal) {
-      usbStrLen = snprintf(usbStrBuf, USB_STR_MAX_LEN, "%08x %d\n", micros(), pinVal);
-      usb_serial_write(usbStrBuf, usbStrLen);
+      msgStrLen = snprintf(msgStr, MSG_STR_SIZE, "%08x %d", micros(), pinVal);
+      USBSERIAL.println(msgStr);
       prevPinVal = pinVal;
-    } 
+    }
+    
     yield();
   }
 }
 
-// int __assert_func(const char *fn, long line)
+/* int __assert_func(const char *fn, long line) */
 void __assert(const char *, int, const char *)
 {
-  usb_serial_write("assert fail! halting!\n", 21);
+  USBSERIAL.println("assert fail! halting!");
   while (1) { ; }
 }

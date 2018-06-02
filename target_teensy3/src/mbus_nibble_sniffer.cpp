@@ -1,54 +1,66 @@
 #include <stdint.h>
 #include <WProgram.h>
-#include <usb_dev.h>
-#include <usb_serial.h>
 #include <core_pins.h>
 #include "mbus_phy.h"
 #include "mbus_link.h"
 
-#define BYTE_BUF_SIZE 64
+#define BYTE_MEM_SIZE 64
+
+#define PINBIT_LED CORE_PIN13_BITMASK
+#define PINBIT_MBUS_SENSE CORE_PIN23_BITMASK
+
+#define USBSERIAL Serial
 
 extern "C" int main(void)
 {
   elapsedMillis blinkMilliSecElapsed;
-  MbusPhyStruct mbusPhyRx;
-  uint8_t rxByteBuf[BYTE_BUF_SIZE];
-  uint8_t txByteBuf[BYTE_BUF_SIZE];
-  bool driveMbusPinLo;
+  uint8_t rxByteMem[BYTE_MEM_SIZE];
+  uint8_t txByteMem[BYTE_MEM_SIZE];
   uint8_t rxNibble;
-  
-  usb_init();
-  PORTC_PCR5 |= PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1);
-  PORTC_PCR2 |= PORT_PCR_MUX(1) | PORT_PCR_PE | PORT_PCR_PS;
-  GPIOC_PDDR |= 0x20;  // gpio data direction reg, for led bit
+  MbusPhyStruct phy;
+  bool driveMbusPinLo = false;
 
-  usb_serial_write("sniffer:\n", 9);
+  PORTC_PCR5 = PORT_PCR_SRE | PORT_PCR_DSE | PORT_PCR_MUX(1); /* LED */
+  PORTC_PCR2 = PORT_PCR_PE  | PORT_PCR_PS  | PORT_PCR_MUX(1); /* MBUS SENSE */
+
+  GPIOC_PDDR |= PINBIT_LED;  /* gpio data direction reg, for led bit */
+
+  GPIOC_PCOR = PINBIT_LED;  /* set led bit low */
+
+  USBSERIAL.begin(115200);
   blinkMilliSecElapsed = 0;
-  mbus_phy_init(&mbusPhyRx,
-                rxByteBuf, BYTE_BUF_SIZE,
-                txByteBuf, BYTE_BUF_SIZE);
+  mbus_phy_init(&phy,
+                rxByteMem,
+                BYTE_MEM_SIZE,
+                txByteMem,
+                BYTE_MEM_SIZE);
+  mbus_phy_rx_enable(&phy);
 
   while (1) {
-    if (blinkMilliSecElapsed > 10000) {
-      GPIOC_PTOR = 0x20;  // gpio toggle reg, for led bit
+    /* blink */
+    if (blinkMilliSecElapsed > 1000) {
+      GPIOC_PTOR = PINBIT_LED;  /* gpio toggle reg, for led bit */
       blinkMilliSecElapsed = 0;
     }
-    mbus_phy_update(&mbusPhyRx,
+
+    /* phy */
+    mbus_phy_update(&phy,
                     micros(),
-                    (GPIOC_PDIR & 0x04) != 0,
+                    (GPIOC_PDIR & PINBIT_MBUS_SENSE) != 0,
                     &driveMbusPinLo
                     );
-    if (!mbus_phy_rx_is_empty(&mbusPhyRx)) {
-      rxNibble = mbus_phy_rx_pop(&mbusPhyRx);
-      usb_serial_putchar(mbus_phy_rxnibble2ascii(rxNibble));
+    if (!mbus_phy_rx_is_empty(&phy)) {
+      rxNibble = mbus_phy_rx_pop(&phy);
+      USBSERIAL.write(mbus_phy_rxnibble2ascii(rxNibble));
     }
+
     yield();
   }
 }
 
-// int __assert_func(const char *fn, long line)
+/* int __assert_func(const char *fn, long line) */
 void __assert(const char *, int, const char *)
 {
-  usb_serial_write("assert fail! halting!\n", 21);
+  USBSERIAL.println("assert fail! halting!");
   while (1) { ; }
 }

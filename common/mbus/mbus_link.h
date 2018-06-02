@@ -1,9 +1,9 @@
-#ifndef FILE_MBUS_PROTOCOL_SEEN
-#define FILE_MBUS_PROTOCOL_SEEN
+#ifndef FILE_MBUS_LINK_SEEN
+#define FILE_MBUS_LINK_SEEN
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "circular_buffer.h"
+#include "fifo.h"
 
 // ERROR IDS
 static const uint8_t ERR_ID_SIGNAL = 0x1;
@@ -29,117 +29,154 @@ static const uint8_t MSGTYPE_unknownStatus = 0x26;
 #define NIBBLE_ARRAY_SIZE ((unsigned int)32)
 
 typedef struct {
-  uint8_t nibbleArray[NIBBLE_ARRAY_SIZE];
-  uint8_t nibbleArrayLength;
+  uint8_t nibbles[NIBBLE_ARRAY_SIZE];
+  uint8_t numNibbles;
 } MbusRawNibbleListStruct;
+
+typedef struct {
+  uint64_t packNibbles;
+  uint8_t numNibbles;
+} MbusPackedNibblesStruct;
 
 // HEAD2CD MSG BODY
 typedef struct {
-  bool resume; 
-  bool stop; 
-  bool scanStop; 
-  bool fastReverse; 
-  bool fastForward; 
-  bool pause; 
-  bool play; 
+  bool resume;
+  bool stop;
+  bool scanStop;
+  bool fastReverse;
+  bool fastForward;
+  bool pause;
+  bool play;
 } MbusMsg_setPlayState_BodyStruct;
 
 typedef struct {
-  uint8_t disk; 
-  uint8_t track; 
-  bool pause; 
-  bool play; 
-  bool random; 
+  uint8_t disk;
+  uint8_t track;
+  bool pause;
+  bool play;
+  bool random;
 } MbusMsg_setDiskTrack_BodyStruct;
 
 typedef struct {
-  bool repeatAll; 
-  bool repeatOne; 
-  bool introScan; 
-  bool random; 
+  bool repeatAll;
+  bool repeatOne;
+  bool introScan;
+  bool random;
 } MbusMsg_setMode_BodyStruct;
 
 typedef struct {
-  uint8_t disk; 
-  uint8_t track; 
-  bool eject; 
-  bool busy; 
-  bool repeatAll; 
-  bool repeatOne; 
-  bool random; 
-  bool done; 
+  uint8_t disk;
+  uint8_t track;
+  bool eject;
+  bool noshuttle;
+  bool busy;
+  bool repeatAll;
+  bool repeatOne;
+  bool random;
+  bool done;
 } MbusMsg_changing_BodyStruct;
 
 typedef struct {
-  uint8_t track; 
-  uint8_t index; 
-  uint8_t minute; 
-  uint8_t second; 
-  bool repeatAll; 
-  bool repeatOne; 
-  bool introScan; 
-  bool random; 
-  bool stopped; 
-  bool paused; 
-  bool play; 
+  uint8_t track;
+  uint8_t index;
+  uint8_t minute;
+  uint8_t second;
+  bool repeatAll;
+  bool repeatOne;
+  bool introScan;
+  bool random;
+  bool stopped;
+  bool paused;
+  bool play;
 } MbusMsg_playState_BodyStruct;
 
 typedef struct {
-  uint8_t disk; 
-  uint8_t tracks; 
-  uint8_t minutes; 
-  uint8_t seconds; 
-  uint8_t flags; 
+  uint8_t disk;
+  uint8_t tracks;
+  uint8_t minutes;
+  uint8_t seconds;
+  uint8_t flags;
 } MbusMsg_diskInfo_BodyStruct;
 
 typedef union {
-  MbusMsg_setPlayState_BodyStruct setPlayState; 
-  MbusMsg_setDiskTrack_BodyStruct setDiskTrack; 
-  MbusMsg_setMode_BodyStruct setMode; 
-  MbusMsg_changing_BodyStruct changing; 
-  MbusMsg_playState_BodyStruct playState; 
-  MbusMsg_diskInfo_BodyStruct diskInfo; 
+  MbusMsg_setPlayState_BodyStruct setPlayState;
+  MbusMsg_setDiskTrack_BodyStruct setDiskTrack;
+  MbusMsg_setMode_BodyStruct setMode;
+  MbusMsg_changing_BodyStruct changing;
+  MbusMsg_playState_BodyStruct playState;
+  MbusMsg_diskInfo_BodyStruct diskInfo;
 } MbusMsgBodyUnion;
 
 typedef struct {
-  bool directionH2C; 
-  uint8_t msgType; 
-  MbusMsgBodyUnion body; 
+  bool directionH2C;
+  uint8_t msgType;
+  MbusMsgBodyUnion body;
 } MbusMsgParsedStruct;
 
 typedef struct {
-  uint8_t errId; 
-  MbusMsgParsedStruct parsed; 
-  MbusRawNibbleListStruct rawNibbles; 
-} MbusMsgStruct;
+  MbusPackedNibblesStruct nibbles;
+} MbusTxMsgStruct;
 
 typedef struct {
-  circular_buffer rxMsgFifo;
-  circular_buffer txMsgFifo;
+  uint8_t errId;
+  MbusMsgParsedStruct parsed;
+  MbusRawNibbleListStruct rawNibbles;
+} MbusRxMsgStruct;
+
+typedef struct {
+  fifo rxMsgFifo;
+  fifo txMsgFifo;
   MbusRawNibbleListStruct nibbles;
+  bool rxNotTxMode;
+  fifo *phyTxNibbleFifo;
 } MbusLinkStruct;
 
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
-  extern void mbus_link_init(MbusLinkStruct *pMbusLink,
-                             MbusMsgStruct *rxMsgMemIn,
+  void mbus_link_init(MbusLinkStruct *pMbusLink,
+                             MbusRxMsgStruct *rxMsgMemIn,
                              size_t rxMsgMemInSize,
-                             MbusMsgStruct *txMsgMemIn,
-                             size_t txMsgMemInSize);
-  extern void mbus_link_rx_update(MbusLinkStruct *pMbusLink,
-                                   uint8_t rxNibble);
-   /* FIXME add tx capability */
-  extern bool mbus_link_rx_is_empty(MbusLinkStruct *pMbusLink);
-  extern void mbus_link_rx_pop(MbusLinkStruct *pMbusLink, MbusMsgStruct *pMbusMsgOut);
-  extern bool mbus_link_tx_is_full(MbusLinkStruct *pMbusLink);
-  extern void mbus_link_tx_push(MbusLinkStruct *pMbusLink, MbusMsgStruct *pMbusMsgIn);
-  extern void mbus_link_parseMsg(uint8_t* nibbleSequence, unsigned int numNibbles, MbusMsgStruct *pMbusMsgOut);
-  extern int mbus_link_msgToStr(MbusMsgStruct *pMbusMsgIn,
+                             MbusTxMsgStruct *txMsgMemIn,
+                             size_t txMsgMemInSize,
+                             fifo *phyTxNibbleFifo);
+  void mbus_link_update(MbusLinkStruct *pMbusLink,
+                               const bool mbusPhyRxBusy,
+                               const bool mbusPhyTxBusy,
+                               bool *phyDirectionUpdated);
+  /* FIXME add tx capability */
+  bool mbus_link_rx_is_empty(MbusLinkStruct *pMbusLink);
+  void mbus_link_rx_pop(MbusLinkStruct *pMbusLink, MbusRxMsgStruct *pMbusMsgOut);
+  void mbus_link_rx_push_nibble(MbusLinkStruct *pMbusLink,
+                                       const uint8_t rxNibble);
+  bool mbus_link_tx_is_empty(MbusLinkStruct *pMbusLink);
+  bool mbus_link_tx_is_full(MbusLinkStruct *pMbusLink);
+  void mbus_link_tx_push(MbusLinkStruct *pMbusLink, MbusTxMsgStruct *pMbusMsgIn);
+  void mbus_link_parseMsg(uint8_t* nibbleSequence, unsigned int numNibbles, MbusRxMsgStruct *pMbusMsgOut);
+  int mbus_link_msgToStr(MbusRxMsgStruct *pMbusMsgIn,
                                 char *strOut,
                                 unsigned int strOutMaxSize);
+  static inline bool mbus_link_is_direction_rx(MbusLinkStruct *pMbusLink) { return pMbusLink->rxNotTxMode; }
+
+  void mbus_link_tx_ping(MbusLinkStruct *pMbusLink);
+  void mbus_link_tx_playState(MbusLinkStruct *pMbusLink,
+                                     uint8_t track,
+                                     uint8_t index,
+                                     unsigned int seconds,
+                                     bool playingNotStopped);
+  void mbus_link_tx_changing(MbusLinkStruct *pMbusLink,
+                                    uint8_t disk,
+                                    uint8_t track);
+  void mbus_link_tx_ackWait(MbusLinkStruct *pMbusLink);
+  void mbus_link_tx_diskInfo(MbusLinkStruct *pMbusLink,
+                             uint8_t disk,
+                             uint8_t tracks,
+                             unsigned int seconds);
+  void mbus_link_tx_cdPowerOn(MbusLinkStruct *pMbusLink);
+  void mbus_link_tx_unknownStatus(MbusLinkStruct *pMbusLink);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus
 
-#endif // FILE_MBUS_PROTOCOL_SEEN
+#endif // FILE_MBUS_LINK_SEEN

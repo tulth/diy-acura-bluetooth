@@ -1,0 +1,41 @@
+Reference, Value, Footprint, Datasheet, MFN, MFP
+P1,MBUS_CONN,diy-acura-bluetooth:mbus_conn,,Sullins,PRPC040SBAN-M71RC
+P2,CONN_01X03,Pin_Headers:Pin_Header_Straight_1x03,,Sullins,PRPC040SAAN-RC
+U1,TLV2362,Housings_DIP:DIP-8_W7.62mm_LongPads,,Texas Instruments,TLV2362IP
+R2,100K,Resistors_ThroughHole:Resistor_Horizontal_RM10mm,,Yageo,MFR-25FBF52-100K
+R1,100K,Resistors_ThroughHole:Resistor_Horizontal_RM10mm,,Yageo,MFR-25FBF52-100K
+R7,20K,Resistors_ThroughHole:Resistor_Horizontal_RM10mm,,Yageo,MFR-25FBF52-20K
+R8,20K,Resistors_ThroughHole:Resistor_Horizontal_RM10mm,,Yageo,MFR-25FBF52-20K
+R3,20K,Resistors_ThroughHole:Resistor_Horizontal_RM10mm,,Yageo,MFR-25FBF52-20K
+R4,20K,Resistors_ThroughHole:Resistor_Horizontal_RM10mm,,Yageo,MFR-25FBF52-20K
+C2,1uF,Capacitors_ThroughHole:C_Rect_L7.5_W6.5_P5,,Kemet,R82DC4100AA60K
+C1,1uF,Capacitors_ThroughHole:C_Rect_L7.5_W6.5_P5,,Kemet,R82DC4100AA60K
+C5,1uF,Capacitors_ThroughHole:C_Rect_L7.5_W6.5_P5,,Kemet,R82DC4100AA60K
+R9,20K,Resistors_ThroughHole:Resistor_Horizontal_RM10mm,,Yageo,MFR-25FBF52-20K
+R5,20K,Resistors_ThroughHole:Resistor_Horizontal_RM10mm,,Yageo,MFR-25FBF52-20K
+R6,20K,Resistors_ThroughHole:Resistor_Horizontal_RM10mm,,Yageo,MFR-25FBF52-20K
+C4,1uF,Capacitors_ThroughHole:C_Rect_L7.5_W6.5_P5,,Kemet,R82DC4100AA60K
+C3,1uF,Capacitors_ThroughHole:C_Rect_L7.5_W6.5_P5,,Kemet,R82DC4100AA60K
+R10,20K,Resistors_ThroughHole:Resistor_Horizontal_RM10mm,,Yageo,MFR-25FBF52-20K
+C9,10uF,Capacitors_ThroughHole:C_Radial_D5_L11_P2,,Kemet,ESK106M016AC3AA
+C10,0.1uF,Capacitors_ThroughHole:C_Disc_D6_P5,,Vishay,K104K10X7RF5UH5
+C7,2.7uF,Capacitors_ThroughHole:C_Rect_L27_W9_H17_P23,,Panasonic,ECW-FD2W275K
+C6,2.7uF,Capacitors_ThroughHole:C_Rect_L27_W9_H17_P23,,Panasonic,ECW-FD2W275K
+U3,R-78E5.0-0.5,diy-acura-bluetooth:R-78E5.0-0.5,,Recom,R-78E5.0-0.5
+D1,1N4004,Diodes_ThroughHole:Diode_DO-41_SOD81_Horizontal_RM10,,Diodes Incorporated,1N4004
+Q1,2N3904,TO_SOT_Packages_THT:TO-92_Molded_Wide_Oval,,On Semiconductor,2N3904
+R11,4.75K,Resistors_ThroughHole:Resistor_Horizontal_RM10mm,,Yageo,MFR-25FBF52-4K75
+Q3,2N3904,TO_SOT_Packages_THT:TO-92_Molded_Wide_Oval,,On Semiconductor,2N3904
+R14,4.75K,Resistors_ThroughHole:Resistor_Horizontal_RM10mm,,Yageo,MFR-25FBF52-4K75
+C11,100uF/10V,Capacitors_ThroughHole:C_Radial_D5_L11_P2,,Panasonic,ECA-1AM101
+U2,AS393P-E1,Housings_DIP:DIP-8_W7.62mm_LongPads,,Diodes Incorporated,AS393P-E1
+R13,47.5K,Resistors_ThroughHole:Resistor_Horizontal_RM10mm,,Yageo,MFR-25FBF52-47K5
+R15,47.5K,Resistors_ThroughHole:Resistor_Horizontal_RM10mm,,Yageo,MFR-25FBF52-47K5
+R12,20K,Resistors_ThroughHole:Resistor_Horizontal_RM10mm,,Yageo,MFR-25FBF52-20K
+Q2,IRFU9024NPBF,diy-acura-bluetooth:TO-251AA-TPAD,,International Rectifier,IRFU9024NPBF
+Q4,2N3904,TO_SOT_Packages_THT:TO-92_Molded_Wide_Oval,,On Semiconductor,2N3904
+R17,47.5K,Resistors_ThroughHole:Resistor_Horizontal_RM10mm,,Yageo,MFR-25FBF52-47K5
+R18,47.5K,Resistors_ThroughHole:Resistor_Horizontal_RM10mm,,Yageo,MFR-25FBF52-47K5
+R16,47.5K,Resistors_ThroughHole:Resistor_Horizontal_RM10mm,,Yageo,MFR-25FBF52-47K5
+U4,TEENSY-3.2,diy-acura-bluetooth:Teensy-3.1,,Sparkfun,DEV-13736
+U5,RN-52-BREAKOUT,diy-acura-bluetooth:RN-52-BREAKOUT,,Sparkfun,WRL-12849

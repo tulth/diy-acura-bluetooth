@@ -1,0 +1,184 @@
+EESchema Schematic File Version 2
+LIBS:power
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:diy
+LIBS:diy-acura-bluetooth-cache
+EELAYER 25 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 4 6
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L 2N3904 Q4
+U 1 1 56F15817
+P 3700 3700
+F 0 "Q4" H 4000 3750 50  0000 R CNN
+F 1 "2N3904" H 4300 3650 50  0000 R CNN
+F 2 "TO_SOT_Packages_THT:TO-92_Molded_Wide_Oval" H 3900 3800 50  0001 C CNN
+F 3 "" H 3700 3700 50  0000 C CNN
+F 4 "On Semiconductor" H 3500 1900 60  0001 C CNN "MFN"
+F 5 "2N3904" H 3500 1900 60  0001 C CNN "MFP"
+	1    3700 3700
+	-1   0    0    -1  
+$EndComp
+Text HLabel 1700 2200 0    60   BiDi ~ 0
+mbusBi
+Text HLabel 1700 1500 0    60   Input ~ 0
+SW12VIn
+$Comp
+L AS393P-E1 U2
+U 2 1 56F16246
+P 4900 2300
+F 0 "U2" H 5050 2450 50  0000 C CNN
+F 1 "AS393P-E1" H 5150 2150 50  0000 C CNN
+F 2 "Housings_DIP:DIP-8_W7.62mm_LongPads" H 4900 2300 50  0001 C CNN
+F 3 "" H 4900 2300 50  0000 C CNN
+F 4 "Diodes Incorporated" H 4400 1600 60  0001 C CNN "MFN"
+F 5 "AS393P-E1" H 4400 1600 60  0001 C CNN "MFP"
+	2    4900 2300
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR020
+U 1 1 56F1624D
+P 4800 2650
+F 0 "#PWR020" H 4800 2400 50  0001 C CNN
+F 1 "GND" H 4800 2500 50  0000 C CNN
+F 2 "" H 4800 2650 50  0000 C CNN
+F 3 "" H 4800 2650 50  0000 C CNN
+	1    4800 2650
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4800 2600 4800 2650
+$Comp
+L R R17
+U 1 1 56F16255
+P 4300 2650
+F 0 "R17" V 4380 2650 50  0000 C CNN
+F 1 "47.5K" V 4300 2650 50  0000 C CNN
+F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM10mm" V 4230 2650 50  0001 C CNN
+F 3 "" H 4300 2650 50  0000 C CNN
+F 4 "Yageo" V 2300 1600 60  0001 C CNN "MFN"
+F 5 "MFR-25FBF52-47K5" V 2300 1600 60  0001 C CNN "MFP"
+	1    4300 2650
+	1    0    0    -1  
+$EndComp
+$Comp
+L R R18
+U 1 1 56F1625C
+P 4550 1900
+F 0 "R18" V 4630 1900 50  0000 C CNN
+F 1 "47.5K" V 4550 1900 50  0000 C CNN
+F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM10mm" V 4480 1900 50  0001 C CNN
+F 3 "" H 4550 1900 50  0000 C CNN
+F 4 "Yageo" V 2300 1600 60  0001 C CNN "MFN"
+F 5 "MFR-25FBF52-47K5" V 2300 1600 60  0001 C CNN "MFP"
+	1    4550 1900
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	4600 2400 4300 2400
+Wire Wire Line
+	4300 1900 4300 2500
+Connection ~ 4300 2400
+$Comp
+L GND #PWR021
+U 1 1 56F16266
+P 4300 2850
+F 0 "#PWR021" H 4300 2600 50  0001 C CNN
+F 1 "GND" H 4300 2700 50  0000 C CNN
+F 2 "" H 4300 2850 50  0000 C CNN
+F 3 "" H 4300 2850 50  0000 C CNN
+	1    4300 2850
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4300 2800 4300 2850
+Wire Wire Line
+	4800 1500 4800 2000
+Wire Wire Line
+	5200 2300 6000 2300
+Connection ~ 4800 1900
+Wire Wire Line
+	4800 1900 4700 1900
+Wire Wire Line
+	4400 1900 4300 1900
+Wire Wire Line
+	1700 2200 4600 2200
+Wire Wire Line
+	1700 1500 4800 1500
+$Comp
+L R R16
+U 1 1 56F166AE
+P 4250 3700
+F 0 "R16" H 4330 3700 50  0000 C CNN
+F 1 "47.5K" V 4250 3700 50  0000 C CNN
+F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM10mm" V 4180 3700 50  0001 C CNN
+F 3 "" H 4250 3700 50  0000 C CNN
+F 4 "Yageo" V 2300 1600 60  0001 C CNN "MFN"
+F 5 "MFR-25FBF52-47K5" V 2300 1600 60  0001 C CNN "MFP"
+	1    4250 3700
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	4100 3700 3900 3700
+$Comp
+L GND #PWR022
+U 1 1 56F1673E
+P 3600 4000
+F 0 "#PWR022" H 3600 3750 50  0001 C CNN
+F 1 "GND" H 3600 3850 50  0000 C CNN
+F 2 "" H 3600 4000 50  0000 C CNN
+F 3 "" H 3600 4000 50  0000 C CNN
+	1    3600 4000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3600 3900 3600 4000
+Wire Wire Line
+	3600 3500 3600 2200
+Connection ~ 3600 2200
+Text HLabel 6000 2300 2    60   Output ~ 0
+mbusSenseOut
+Text HLabel 6000 3700 2    60   Input ~ 0
+driveMbusLoIn
+Wire Wire Line
+	4400 3700 6000 3700
+$EndSCHEMATC

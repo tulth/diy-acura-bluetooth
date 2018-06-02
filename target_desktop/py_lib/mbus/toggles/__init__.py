@@ -124,7 +124,8 @@ class ToggleList(list):
 
 
 def intervalizedToggles(toggles, interval):
-    prevToggle = fromTimeValStr_ToggleElement(mbusTime.MbusTime(0), '1', "microsInt")
+    startTime = toggles[0].time - (10 * interval)
+    prevToggle = fromTimeValStr_ToggleElement(startTime, '1', "microsInt")
     lowLevelToggleSeq = []
     for toggle in toggles:
         while toggle.time.val - prevToggle.time.val > interval:
