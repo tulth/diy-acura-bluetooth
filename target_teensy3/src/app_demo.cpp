@@ -466,11 +466,13 @@ void app_init(appStruct *pApp)
                      sizeof(simpleMbusRxFifoMem),
                      sizeof(appMbusSimpleRxMsgType));
   pApp->state = START;
-  pApp->disk = 1;
+  pApp->disk = 4;
   pApp->track = 0;
   pApp->index = 0;
   pApp->seconds = 0;
   pApp->numTracks = NUM_TRACKS;
+  delay(1000);
+  rn52_reconnect_last(&pApp->rn52);
 }
 
 char gMsgStr[MSG_STR_SIZE];
@@ -510,6 +512,18 @@ void app_update(appStruct *pApp)
     case prev:
       rn52_avrcp_prev(&pApp->rn52);
       break;
+    case switchDisk1:
+      rn52_avrcp_play(&pApp->rn52);
+      break;
+    case switchDisk5:
+      rn52_reconnect_last(&pApp->rn52);
+      break;
+    case switchDisk6:
+      rn52_pairing(&pApp->rn52);
+      break;
+    // case switchDisk3:
+    //   reboot();
+    //   break;
     default:
       gotRxMsg = true;
       break;

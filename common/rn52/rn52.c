@@ -10,8 +10,6 @@ typedef enum {
   CHECK_EXTFEAT,
   SET_EXTFEAT,
   RUNNING,
-  RECONNECT,
-  RECONNECT_CHECK,
   SWITCH_TO_CMD_MODE,
   SWITCH_TO_CMD_DELAY_HI,
   SWITCH_TO_CMD_DELAY_LO,
@@ -85,31 +83,56 @@ void _doAvrCpCmdIfAvailable(Rn52Struct *pRn52)
   uint8_t avrcpCmd;
   if (!_rn52_avrcp_cmd_fifo_is_empty(pRn52)) {
     avrcpCmd = _rn52_avrcp_cmd_fifo_pop(pRn52);
-    switch (avrcpCmd) {
-    case RN52_AVRCP_CMD_PLAY:
-      if (!rn52_avrcp_is_playing(pRn52)) {
+    if (avrcpCmd == RN52_AVRCP_CMD_RECONNECT_LAST) {
+      strcpy(pRn52->txCmd, "B");
+      pRn52->state = ACTION_OR_SET_CMD;
+      pRn52->returnState = RUNNING;
+    } else if (avrcpCmd == RN52_AVRCP_CMD_PAUSE) {
+      strcpy(pRn52->txCmd, "@,1");
+      pRn52->state = ACTION_OR_SET_CMD;
+      pRn52->returnState = RUNNING;
+    } else if (rn52_is_connected(pRn52)) {
+      switch (avrcpCmd) {
+      case RN52_AVRCP_CMD_PLAY:
+        if (!rn52_avrcp_is_playing(pRn52)) {
+          strcpy(pRn52->txCmd, "AP");
+        }
+        break;
+      case RN52_AVRCP_CMD_PAUSE:
+        if (rn52_avrcp_is_playing(pRn52)) {
+          strcpy(pRn52->txCmd, "AP");
+        }
+        break;
+      case RN52_AVRCP_CMD_NEXT:
+        strcpy(pRn52->txCmd, "AT+");
+        break;
+      case RN52_AVRCP_CMD_PREV:
+        strcpy(pRn52->txCmd, "AT-");
+        break;
+      case RN52_AVRCP_CMD_PLAYPAUSE:
         strcpy(pRn52->txCmd, "AP");
+        break;
       }
-      break;
-    case RN52_AVRCP_CMD_PAUSE:
-      if (rn52_avrcp_is_playing(pRn52)) {
-        strcpy(pRn52->txCmd, "AP");
-      }
-      break;
-    case RN52_AVRCP_CMD_NEXT:
-      strcpy(pRn52->txCmd, "AT+");
-      break;
-    case RN52_AVRCP_CMD_PREV:
-      strcpy(pRn52->txCmd, "AT-");
-      break;
-    case RN52_AVRCP_CMD_PLAYPAUSE:
-      strcpy(pRn52->txCmd, "AP");
-      break;
+      pRn52->state = ACTION_OR_SET_CMD;
+      pRn52->returnState = RUNNING;
+    } else { // drop it
+      pRn52->state = RUNNING;
     }
-    pRn52->state = ACTION_OR_SET_CMD;
-    pRn52->returnState = RUNNING;
   }
 }
+
+  /* case RECONNECT: */
+  /*   idx=0; */
+  /*   pRn52->txCmd[idx++] = 'B'; */
+  /*   pRn52->txCmd[idx++] = '\0'; */
+  /*   pRn52->state = ACTION_OR_SET_CMD; */
+  /*   pRn52->returnState = RECONNECT_CHECK; */
+  /*   break; */
+  /* case RECONNECT_CHECK: */
+  /*   pRn52->state = QUERY_CONSTAT; */
+  /*   pRn52->returnState = RUNNING; */
+  /*   break; */
+  
 
 bool _rn52_is_cmd_reboot(Rn52Struct *pRn52)
 {
@@ -194,22 +217,9 @@ void rn52_update(Rn52Struct *pRn52,
       pRn52->eventLoMilliSecTimeStamp = milliSecElapsed;
       pRn52->state = QUERY_CONSTAT;
       pRn52->returnState = RUNNING;
-    } else if (rn52_is_connected(pRn52)) {
-      _doAvrCpCmdIfAvailable(pRn52);
     } else {  /* far end is not connected */
-      pRn52->state = RECONNECT;
+      _doAvrCpCmdIfAvailable(pRn52);
     }
-    break;
-  case RECONNECT:
-    idx=0;
-    pRn52->txCmd[idx++] = 'B';
-    pRn52->txCmd[idx++] = '\0';
-    pRn52->state = ACTION_OR_SET_CMD;
-    pRn52->returnState = RECONNECT_CHECK;
-    break;
-  case RECONNECT_CHECK:
-    pRn52->state = QUERY_CONSTAT;
-    pRn52->returnState = RUNNING;
     break;
   case SWITCH_TO_CMD_MODE:
     *pCmdPin = true;
@@ -439,6 +449,16 @@ void rn52_avrcp_playpause(Rn52Struct *pRn52)
   if (rn52_is_connected(pRn52)) {
     _rn52_avrcp_cmd_fifo_push(pRn52, RN52_AVRCP_CMD_PLAYPAUSE);
   }
+}
+
+void rn52_reconnect_last(Rn52Struct *pRn52)
+{
+  _rn52_avrcp_cmd_fifo_push(pRn52, RN52_AVRCP_CMD_RECONNECT_LAST);
+}
+
+void rn52_pairing(Rn52Struct *pRn52)
+{
+  _rn52_avrcp_cmd_fifo_push(pRn52, RN52_AVRCP_CMD_PAIRING);
 }
 
 bool _rn52_avrcp_cmd_fifo_is_full(Rn52Struct *pRn52)
