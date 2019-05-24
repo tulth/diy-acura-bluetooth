@@ -256,6 +256,9 @@ void rn52_update(Rn52Struct *pRn52,
       }
     } else if ((milliSecElapsed - pRn52->replyMilliSecTimeStamp) > RN52_CMD_TIMEOUT_MILLSEC) {
       /* timed out, try again */
+#ifdef DEBUG_RN52
+      app_debug_printf("timeout-s2car\r\n");
+#endif /* DEBUG_RN52 */
       pRn52->state = SWITCH_TO_CMD_MODE;
       pRn52->rxStrLen = 0;
     }
