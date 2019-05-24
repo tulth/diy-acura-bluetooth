@@ -7,6 +7,10 @@
 #include "rn52.h"
 #include "app_debug.h"
 
+#define CPU_RESTART_ADDR 			(uint32_t *)0xE000ED0C
+#define CPU_RESTART_VAL 			0x5FA0004
+#define CPU_RESTART 				(*CPU_RESTART_ADDR = CPU_RESTART_VAL)
+
 #define RN52_AVRCP_CMD_MEM_SIZE 16
 #define BYTE_MEM_SIZE 256
 #define RX_MSG_MEM_NUM 4
@@ -514,6 +518,9 @@ void app_update(appStruct *pApp)
       break;
     case switchDisk1:
       rn52_avrcp_play(&pApp->rn52);
+      break;
+    case switchDisk4:
+      CPU_RESTART;
       break;
     case switchDisk5:
       rn52_reconnect_last(&pApp->rn52);
