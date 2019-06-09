@@ -7,9 +7,12 @@
 #include "rn52.h"
 #include "app_debug.h"
 
-#define CPU_RESTART_ADDR 			(uint32_t *)0xE000ED0C
-#define CPU_RESTART_VAL 			0x5FA0004
-#define CPU_RESTART 				(*CPU_RESTART_ADDR = CPU_RESTART_VAL)
+// #define CPU_RESTART_ADDR 			(uint32_t *)0xE000ED0C
+// #define CPU_RESTART_VAL 			0x5FA0004
+// #define CPU_RESTART 				(*CPU_RESTART_ADDR = CPU_RESTART_VAL)
+#define RESTART_ADDR       0xE000ED0C
+#define READ_RESTART()     (*(volatile uint32_t *)RESTART_ADDR)
+#define WRITE_RESTART(val) ((*(volatile uint32_t *)RESTART_ADDR) = (val))
 
 #define RN52_AVRCP_CMD_MEM_SIZE 16
 #define BYTE_MEM_SIZE 256
@@ -181,7 +184,7 @@ extern "C" int main(void)
   app_debug_print("start\r\n");
   while (1) {
     /* blink */
-    if (blinkMilliSecElapsed > 5000) {
+    if (blinkMilliSecElapsed > 1000) {
       GPIOC_PTOR = PINBIT_LED;  /* gpio toggle reg, for led bit */
       blinkMilliSecElapsed = 0;
       //      app_debug_print("beep\r\n");
@@ -470,7 +473,7 @@ void app_init(appStruct *pApp)
                      sizeof(simpleMbusRxFifoMem),
                      sizeof(appMbusSimpleRxMsgType));
   pApp->state = START;
-  pApp->disk = 4;
+  pApp->disk = 3;
   pApp->track = 0;
   pApp->index = 0;
   pApp->seconds = 0;
@@ -520,7 +523,8 @@ void app_update(appStruct *pApp)
       rn52_avrcp_play(&pApp->rn52);
       break;
     case switchDisk4:
-      CPU_RESTART;
+      //WRITE_RESTART(0x5FA0004);
+      rn52_reboot(&pApp->rn52);
       break;
     case switchDisk5:
       rn52_reconnect_last(&pApp->rn52);

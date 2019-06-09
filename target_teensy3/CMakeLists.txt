@@ -39,7 +39,7 @@ add_definitions(-D__MKL26Z64__ )
 add_definitions(-DEMBEDDED )
 # add_definitions( -DDEBUG_MBUS_PHY )
 # add_definitions( -DDEBUG_MBUS_LINK )
-# add_definitions( -DDEBUG_RN52 )
+add_definitions( -DDEBUG_RN52 )
 
 include_directories("./submodule_teensy_cores/teensy3" "../common" "../common/mbus" "../common/rn52" "./arm_lib/include" )
 
