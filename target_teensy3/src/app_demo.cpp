@@ -117,6 +117,7 @@ static inline const char *simpleMbusMsg2Str(appMbusSimpleRxMsgType msg)
     return "switchDisk6";
     break;
   }
+  return "unknown";
 }
 
 void app_init(appStruct *app);
@@ -527,6 +528,16 @@ void app_update(appStruct *pApp)
       rn52_reboot(&pApp->rn52);
       break;
     case switchDisk5:
+      // try just sending this many times as it seems to fail often
+      rn52_reconnect_last(&pApp->rn52);
+      rn52_reconnect_last(&pApp->rn52);
+      rn52_reconnect_last(&pApp->rn52);
+      rn52_reconnect_last(&pApp->rn52);
+      rn52_reconnect_last(&pApp->rn52);
+      rn52_reconnect_last(&pApp->rn52);
+      rn52_reconnect_last(&pApp->rn52);
+      rn52_reconnect_last(&pApp->rn52);
+      rn52_reconnect_last(&pApp->rn52);
       rn52_reconnect_last(&pApp->rn52);
       break;
     case switchDisk6:
