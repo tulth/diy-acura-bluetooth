@@ -87,7 +87,11 @@ void _doAvrCpCmdIfAvailable(Rn52Struct *pRn52)
       strcpy(pRn52->txCmd, "B");
       pRn52->state = ACTION_OR_SET_CMD;
       pRn52->returnState = RUNNING;
-    } else if (avrcpCmd == RN52_AVRCP_CMD_PAUSE) {
+    } else if (avrcpCmd == RN52_AVRCP_CMD_REBOOT) {
+      strcpy(pRn52->txCmd, "R,1");
+      pRn52->state = ACTION_OR_SET_CMD;
+      pRn52->returnState = RUNNING;
+    } else if (avrcpCmd == RN52_AVRCP_CMD_PAIRING) {
       strcpy(pRn52->txCmd, "@,1");
       pRn52->state = ACTION_OR_SET_CMD;
       pRn52->returnState = RUNNING;
@@ -139,7 +143,7 @@ bool _rn52_is_cmd_reboot(Rn52Struct *pRn52)
   if (pRn52->txCmd[0] != 'R') { return false; }
   if (pRn52->txCmd[1] != ',') { return false; }
   if (pRn52->txCmd[2] != '1') { return false; }
-  return (strcmp(pRn52->txCmd, "R,1"));
+  return (strncmp(pRn52->txCmd, "R,1", 3));
 }
 
 void rn52_update(Rn52Struct *pRn52,
@@ -256,6 +260,9 @@ void rn52_update(Rn52Struct *pRn52,
       }
     } else if ((milliSecElapsed - pRn52->replyMilliSecTimeStamp) > RN52_CMD_TIMEOUT_MILLSEC) {
       /* timed out, try again */
+#ifdef DEBUG_RN52
+      app_debug_printf("timeout-s2car\r\n");
+#endif /* DEBUG_RN52 */
       pRn52->state = SWITCH_TO_CMD_MODE;
       pRn52->rxStrLen = 0;
     }
@@ -459,6 +466,11 @@ void rn52_reconnect_last(Rn52Struct *pRn52)
 void rn52_pairing(Rn52Struct *pRn52)
 {
   _rn52_avrcp_cmd_fifo_push(pRn52, RN52_AVRCP_CMD_PAIRING);
+}
+
+void rn52_reboot(Rn52Struct *pRn52)
+{
+  _rn52_avrcp_cmd_fifo_push(pRn52, RN52_AVRCP_CMD_REBOOT);
 }
 
 bool _rn52_avrcp_cmd_fifo_is_full(Rn52Struct *pRn52)

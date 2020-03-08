@@ -58,6 +58,7 @@ const uint16_t DEFAULT_EXTFEAT = (RN52_EXTFEAT_DISABLE_SYSTEM_TONES);
 #define RN52_AVRCP_CMD_PLAYPAUSE       5
 #define RN52_AVRCP_CMD_RECONNECT_LAST  6
 #define RN52_AVRCP_CMD_PAIRING         7
+#define RN52_AVRCP_CMD_REBOOT          8
 
 #ifdef __cplusplus
 extern "C" {
@@ -80,6 +81,7 @@ extern "C" {
   extern void rn52_avrcp_playpause(Rn52Struct *pRn52);
   extern void rn52_reconnect_last(Rn52Struct *pRn52);
   extern void rn52_pairing(Rn52Struct *pRn52);
+  extern void rn52_reboot(Rn52Struct *pRn52);
   extern void rn52_avrcp_status(Rn52Struct *pRn52,
                                      bool *connected,
                                      bool *playing);
