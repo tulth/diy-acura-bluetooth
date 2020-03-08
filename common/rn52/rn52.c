@@ -91,7 +91,7 @@ void _doAvrCpCmdIfAvailable(Rn52Struct *pRn52)
       strcpy(pRn52->txCmd, "R,1");
       pRn52->state = ACTION_OR_SET_CMD;
       pRn52->returnState = RUNNING;
-    } else if (avrcpCmd == RN52_AVRCP_CMD_PAUSE) {
+    } else if (avrcpCmd == RN52_AVRCP_CMD_PAIRING) {
       strcpy(pRn52->txCmd, "@,1");
       pRn52->state = ACTION_OR_SET_CMD;
       pRn52->returnState = RUNNING;
